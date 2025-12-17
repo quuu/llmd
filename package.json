@@ -31,7 +31,7 @@
   "scripts": {
     "dev": "bun --hot index.ts",
     "test": "bun test",
-    "build": "rm -f dist/llmd dist/llmd.js* llmd.js* dist/client.js && mkdir -p dist && bun build --target=browser --minify ./src/client-bundle.ts --outfile=dist/client.js && bun build --target=node --minify --sourcemap ./index.ts --outfile=llmd.js && mv llmd.js* dist/ && sed -i '' '1s|#!/usr/bin/env bun|#!/usr/bin/env node|' dist/llmd.js && mv dist/llmd.js dist/llmd && chmod +x dist/llmd",
+    "build": "rm -f dist/llmd dist/llmd.js* llmd.js* dist/client.js && mkdir -p dist && bun build --target=browser --minify ./src/client-bundle.ts --outfile=dist/client.js && bun build --target=node --minify --sourcemap ./index.ts --outfile=llmd.js && mv llmd.js* dist/ && sed -i.bak '1s|#!/usr/bin/env bun|#!/usr/bin/env node|' dist/llmd.js && rm -f dist/llmd.js.bak && mv dist/llmd.js dist/llmd && chmod +x dist/llmd",
     "prepublishOnly": "bun test && bun run build",
     "preview": "bun scripts/generate-preview.ts",
     "check-contrast": "bun scripts/check-contrast.ts",
@@ -51,6 +51,7 @@
   ],
   "dependencies": {
     "@types/ws": "^8.18.1",
+    "better-sqlite3": "^12.5.0",
     "fast-glob": "^3.3.3",
     "figlet": "^1.9.4",
     "marked": "^17.0.1",
@@ -59,6 +60,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.8",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/bun": "latest",
     "@types/figlet": "^1.7.0",
     "husky": "^9.1.7",
