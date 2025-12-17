@@ -4,15 +4,6 @@
 
 A zero-config CLI tool for viewing Markdown files in your browser with syntax highlighting, live reload, and a clean interface. Built for developers reviewing LLM-generated documentation.
 
-```
- ██╗     ██╗     ███╗   ███╗██████╗ 
- ██║     ██║     ████╗ ████║██╔══██╗
- ██║     ██║     ██╔████╔██║██║  ██║
- ██║     ██║     ██║╚██╔╝██║██║  ██║
- ███████╗███████╗██║ ╚═╝ ██║██████╔╝
- ╚══════╝╚══════╝╚═╝     ╚═╝╚═════╝ 
-```
-
 ## Features
 
 - **Zero config** - Point at a directory and go
@@ -33,6 +24,7 @@ npm install -g llmd
 ```
 
 Or run directly without installing:
+
 ```bash
 npx llmd
 ```
@@ -88,6 +80,7 @@ Create custom font combinations in your `themes.json` config file.
 **Location:** `~/.config/llmd/themes.json` (or `$XDG_CONFIG_HOME/llmd/themes.json`)
 
 **Simple Example (Auto-loaded from Google Fonts):**
+
 ```json
 {
   "fontThemes": {
@@ -103,12 +96,13 @@ Create custom font combinations in your `themes.json` config file.
 Google Fonts are **loaded automatically** with weights 400 and 700. Just specify the font family names - no need to construct Google Fonts URLs manually!
 
 **Advanced Example (Custom Weights/Styles):**
+
 ```json
 {
   "fontThemes": {
     "custom": {
       "heading": "Poppins, sans-serif",
-      "body": "Inter, sans-serif", 
+      "body": "Inter, sans-serif",
       "code": "Fira Code, monospace",
       "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&family=Fira+Code:wght@400;500&display=swap"
     }
@@ -119,11 +113,13 @@ Google Fonts are **loaded automatically** with weights 400 and 700. Just specify
 Use `googleFontsUrl` only if you need specific weights (like 300, 500, 600) or styles (italic, etc.). Get custom URLs from [Google Fonts](https://fonts.google.com).
 
 **Usage:**
+
 ```bash
 llmd --fonts myfont
 ```
 
 **Requirements:**
+
 - `heading`, `body`, and `code` properties are required
 - Font names should include CSS fallbacks (e.g., `"Roboto, sans-serif"`)
 - System fonts (Arial, Georgia, etc.) don't load from Google Fonts
@@ -147,6 +143,7 @@ Create custom color themes in your `themes.json` config file.
 **Location:** `~/.config/llmd/themes.json` (or `$XDG_CONFIG_HOME/llmd/themes.json`)
 
 **Format:**
+
 ```json
 {
   "colorThemes": {
@@ -167,6 +164,7 @@ Create custom color themes in your `themes.json` config file.
 
 **Unified Config:**
 You can combine both color themes and font themes in a single file:
+
 ```json
 {
   "colorThemes": {
@@ -179,6 +177,7 @@ You can combine both color themes and font themes in a single file:
 ```
 
 **Usage:**
+
 ```bash
 llmd --theme mytheme --fonts myfont
 ```
@@ -189,16 +188,16 @@ If a theme or font is not found, llmd will list all available options.
 
 ## Options
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--port <number>` | Port (0 = random) | `0` (random) |
-| `--host <string>` | Host interface | `localhost` |
-| `--theme <name>` | Color theme: `dark`, `light`, `nord`, `dracula`, `solarized`, `monokai`, or custom | `dark` |
-| `--fonts <name>` | Font combination: `serif`, `sans`, `mono`, `classic`, `future`, `modern`, `artsy`, `literary`, `editorial` | `sans` |
-| `--open / --no-open` | Auto-open browser | `--open` |
-| `--watch / --no-watch` | Live reload on changes | `--no-watch` |
-| `-h, --help` | Show help | |
-| `--version` | Show version | |
+| Flag                   | Description                                                                                                | Default      |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------- | ------------ |
+| `--port <number>`      | Port (0 = random)                                                                                          | `0` (random) |
+| `--host <string>`      | Host interface                                                                                             | `localhost`  |
+| `--theme <name>`       | Color theme: `dark`, `light`, `nord`, `dracula`, `solarized`, `monokai`, or custom                         | `dark`       |
+| `--fonts <name>`       | Font combination: `serif`, `sans`, `mono`, `classic`, `future`, `modern`, `artsy`, `literary`, `editorial` | `sans`       |
+| `--open / --no-open`   | Auto-open browser                                                                                          | `--open`     |
+| `--watch / --no-watch` | Live reload on changes                                                                                     | `--no-watch` |
+| `-h, --help`           | Show help                                                                                                  |              |
+| `--version`            | Show version                                                                                               |              |
 
 ## Development
 
