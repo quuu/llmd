@@ -43,6 +43,44 @@ const getStyles = (themeName: string, fontTheme: string): string => {
       border-right: 1px solid var(--border);
       overflow-y: auto;
       flex-shrink: 0;
+      position: relative;
+    }
+    
+    .sidebar::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb {
+      background: ${isDark ? "#333" : "#ddd"};
+      border-radius: 4px;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: ${isDark ? "#444" : "#ccc"};
+    }
+    
+    .sidebar {
+      scrollbar-width: thin;
+      scrollbar-color: ${isDark ? "#333 transparent" : "#ddd transparent"};
+    }
+    
+    .sidebar-resize-handle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 4px;
+      height: 100%;
+      cursor: ew-resize;
+      background: transparent;
+      transition: background 0.2s;
+    }
+    
+    .sidebar-resize-handle:hover {
+      background: var(--accent);
     }
     
     .sidebar-header {
@@ -82,6 +120,10 @@ const getStyles = (themeName: string, fontTheme: string): string => {
       position: relative;
     }
     
+    .sidebar-nav .dir-item.collapsed > ul {
+      display: none;
+    }
+    
     .sidebar-nav .dir-item > ul {
       margin-top: 2px;
       position: relative;
@@ -101,6 +143,35 @@ const getStyles = (themeName: string, fontTheme: string): string => {
       align-items: center;
       gap: 8px;
       letter-spacing: 0.01em;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    
+    .sidebar-nav .dir-label:hover {
+      background: var(--hover);
+    }
+    
+    .dir-chevron {
+      display: inline-flex;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+    
+    .dir-item.collapsed .dir-chevron {
+      transform: rotate(-90deg);
+    }
+    
+    .dir-chevron svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .sidebar-nav .dir-label span,
+    .sidebar-nav a span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     
     .sidebar-nav .dir-label svg {
@@ -334,17 +405,82 @@ const getStyles = (themeName: string, fontTheme: string): string => {
       background: var(--sidebar-bg);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 20px;
+      padding: 16px 20px;
       margin: 24px 0;
+      overflow: hidden;
+    }
+    
+    .toc ul {
+      max-height: 400px;
+      overflow-y: auto;
+      opacity: 1;
+      transition: max-height 0.3s ease-out, opacity 0.2s ease-out, margin 0.2s;
+      margin: 0 -16px 0 0;
+      padding: 0 16px 0 0;
+    }
+    
+    .toc ul::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .toc ul::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .toc ul::-webkit-scrollbar-thumb {
+      background: ${isDark ? "#444" : "#ccc"};
+      border-radius: 3px;
+    }
+    
+    .toc ul::-webkit-scrollbar-thumb:hover {
+      background: ${isDark ? "#555" : "#bbb"};
+    }
+    
+    .toc ul {
+      scrollbar-width: thin;
+      scrollbar-color: ${isDark ? "#444 transparent" : "#ccc transparent"};
+    }
+    
+    .toc.collapsed ul {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
     }
     
     .toc h3 {
       font-size: 0.875rem;
-      margin-bottom: 12px;
+      margin: 0 0 12px 0;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-weight: 700;
       color: ${isDark ? "#b3b3b3" : "#666"};
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: margin 0.2s;
+    }
+    
+    .toc.collapsed h3 {
+      margin-bottom: 0;
+    }
+    
+    .toc-chevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+      opacity: 0.6;
+      transform-origin: center center;
+    }
+    
+    .toc.collapsed .toc-chevron {
+      transform: rotate(-90deg);
+    }
+    
+    .toc-chevron svg {
+      width: 16px;
+      height: 16px;
+      display: block;
     }
     
     .toc ul {
