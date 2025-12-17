@@ -2,13 +2,13 @@
 
 import { type FSWatcher, watch } from "node:fs";
 import { join } from "node:path";
-import type { ServerWebSocket } from "bun";
+import type { WebSocket } from "ws";
 
 // Type for tracking watched files and their subscribers
 export type WatchedFile = {
   path: string;
   watcher: FSWatcher;
-  subscribers: Set<ServerWebSocket<{ file: string }>>;
+  subscribers: Set<WebSocket & { file?: string }>;
 };
 
 // Map of file paths to their watchers and subscribers
@@ -41,7 +41,7 @@ const createDebouncedCallback = (filePath: string, callback: () => void): (() =>
 export const watchFile = (
   rootDir: string,
   relativePath: string,
-  subscriber: ServerWebSocket<{ file: string }>
+  subscriber: WebSocket & { file?: string }
 ): void => {
   const fullPath = join(rootDir, relativePath);
 
@@ -106,7 +106,7 @@ export const watchFile = (
 // Side effect: stop watching a file for a specific subscriber
 export const unwatchFile = (
   relativePath: string,
-  subscriber: ServerWebSocket<{ file: string }>
+  subscriber: WebSocket & { file?: string }
 ): void => {
   const watched = watchedFiles.get(relativePath);
   if (!watched) {

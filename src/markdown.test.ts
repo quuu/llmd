@@ -30,6 +30,40 @@ describe("extractHeadings", () => {
     const headings = extractHeadings("");
     expect(headings.length).toBe(0);
   });
+
+  test("ignores hash comments inside code blocks", () => {
+    const markdown = `# Real Heading
+
+\`\`\`bash
+# This is a comment, not a heading
+echo "test"
+\`\`\`
+
+## Another Real Heading`;
+    const headings = extractHeadings(markdown);
+
+    expect(headings.length).toBe(2);
+    expect(headings[0]?.text).toBe("Real Heading");
+    expect(headings[1]?.text).toBe("Another Real Heading");
+  });
+
+  test("ignores multiple hash comments in code blocks", () => {
+    const markdown = `# Title
+
+\`\`\`python
+# Comment 1
+def foo():
+    # Comment 2
+    pass
+\`\`\`
+
+## Section`;
+    const headings = extractHeadings(markdown);
+
+    expect(headings.length).toBe(2);
+    expect(headings[0]?.text).toBe("Title");
+    expect(headings[1]?.text).toBe("Section");
+  });
 });
 
 describe("renderMarkdown", () => {

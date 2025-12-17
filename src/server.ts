@@ -1,7 +1,10 @@
-// HTTP server using Bun.serve() (functional style)
+// HTTP server using Node.js http + ws
 
+import { readFile } from "node:fs/promises";
+import { createServer } from "node:http";
 import { join } from "node:path";
-import type { ServerWebSocket } from "bun";
+import type { WebSocket } from "ws";
+import { WebSocketServer } from "ws";
 import { getClientScriptTag } from "./client-assets";
 import { processMarkdown } from "./markdown";
 import { generateErrorPage, generateIndexPage, generateMarkdownPage } from "./template";
@@ -9,7 +12,7 @@ import type { Config, MarkdownFile } from "./types";
 import { unwatchFile, watchFile } from "./watcher";
 
 // Pure function: create HTML response headers with cache control
-const htmlHeaders = (): HeadersInit => ({
+const htmlHeaders = (): Record<string, string> => ({
   "Content-Type": "text/html",
   "Cache-Control": "no-cache, no-store, must-revalidate",
   Pragma: "no-cache",
@@ -30,12 +33,41 @@ const parseViewPath = (pathname: string): string | null => {
 const readMarkdownFile = async (rootDir: string, relativePath: string): Promise<string | null> => {
   try {
     const fullPath = join(rootDir, relativePath);
-    const file = Bun.file(fullPath);
-    const content = await file.text();
+    const content = await readFile(fullPath, "utf-8");
     return content;
   } catch {
     return null;
   }
+};
+
+// Helper: send response
+const sendResponse = (
+  res: import("node:http").ServerResponse,
+  statusCode: number,
+  headers: Record<string, string>,
+  body: string
+): void => {
+  res.writeHead(statusCode, headers);
+  res.end(body);
+};
+
+// Regex for matching .md extension (top-level to avoid re-creation)
+const MD_EXTENSION = /\.md$/;
+
+// Helper: extract theme/font from filename (for preview mode)
+// Format: theme-font.md (e.g., "dark-modern.md", "nord-classic.md")
+const extractPreviewConfig = (filename: string): { theme?: string; font?: string } | null => {
+  // Remove .md extension
+  const nameWithoutExt = filename.replace(MD_EXTENSION, "");
+
+  // Check if it matches theme-font pattern
+  const parts = nameWithoutExt.split("-");
+  if (parts.length === 2) {
+    const [theme, font] = parts;
+    return { theme, font };
+  }
+
+  return null;
 };
 
 // Helper: handle markdown file view
@@ -43,8 +75,9 @@ const handleMarkdownView = async (
   viewPath: string,
   config: Config,
   files: MarkdownFile[],
-  clientScript: string
-): Promise<Response> => {
+  clientScript: string,
+  res: import("node:http").ServerResponse
+): Promise<void> => {
   const markdown = await readMarkdownFile(config.directory, viewPath);
 
   if (!markdown) {
@@ -55,27 +88,36 @@ const handleMarkdownView = async (
       config,
       clientScript,
     });
-    return new Response(html, {
-      status: 404,
-      headers: htmlHeaders(),
-    });
+    sendResponse(res, 404, htmlHeaders(), html);
+    return;
   }
 
   try {
-    const { html, toc } = await processMarkdown(markdown, config.theme);
+    // Check if this is a preview file and extract theme/font from filename
+    const filename = viewPath.split("/").pop() ?? viewPath;
+    const previewConfig = extractPreviewConfig(filename);
+
+    // Override config with preview settings if detected
+    const renderConfig = previewConfig
+      ? {
+          ...config,
+          theme: previewConfig.theme ?? config.theme,
+          fontTheme: previewConfig.font ?? config.fontTheme,
+        }
+      : config;
+
+    const { html, toc } = await processMarkdown(markdown, renderConfig.theme);
     const page = generateMarkdownPage({
       html,
       toc,
-      fileName: viewPath.split("/").pop() ?? viewPath,
+      fileName: filename,
       files,
-      config,
+      config: renderConfig,
       currentPath: viewPath,
       clientScript,
     });
 
-    return new Response(page, {
-      headers: htmlHeaders(),
-    });
+    sendResponse(res, 200, htmlHeaders(), page);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to render markdown";
     const errorHtml = generateErrorPage({
@@ -85,58 +127,71 @@ const handleMarkdownView = async (
       config,
       clientScript,
     });
-    return new Response(errorHtml, {
-      status: 500,
-      headers: htmlHeaders(),
-    });
+    sendResponse(res, 500, htmlHeaders(), errorHtml);
   }
 };
 
-// Pure function: create server handler
+// Pure function: create request handler
 const createHandler = (config: Config, files: MarkdownFile[], clientScript: string) => {
-  return (
-    req: Request,
-    // biome-ignore lint/suspicious/noExplicitAny: Bun.serve has complex generic types that are hard to satisfy here
-    server: any
-  ): Promise<Response | undefined> | Response | undefined => {
-    const url = new URL(req.url);
+  return async (
+    req: import("node:http").IncomingMessage,
+    res: import("node:http").ServerResponse
+  ): Promise<void> => {
+    const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
     const pathname = url.pathname;
 
-    // Route: WebSocket upgrade (only if watch enabled)
-    if (pathname === "/_ws" && config.watch) {
-      if (server.upgrade(req)) {
-        return; // WebSocket upgrade successful
+    // Log HTTP request (only for markdown files and home page)
+    const shouldLog = pathname === "/" || pathname.startsWith("/view/");
+    if (shouldLog) {
+      const timestamp = new Date().toISOString().split("T")[1]?.split(".")[0];
+      console.log(`[${timestamp}] ${req.method} ${pathname}`);
+    }
+
+    // Route: Favicon
+    if (pathname === "/_favicon") {
+      try {
+        const favicon = await readFile("./src/favicon.svg", "utf-8");
+        res.writeHead(200, {
+          "Content-Type": "image/svg+xml",
+          "Cache-Control": "public, max-age=31536000, immutable",
+        });
+        res.end(favicon);
+        return;
+      } catch {
+        sendResponse(res, 404, { "Content-Type": "text/plain" }, "Favicon not found");
+        return;
       }
-      return new Response("WebSocket upgrade failed", { status: 400 });
     }
 
     // Route: Font files
     if (pathname.startsWith("/_fonts/")) {
       const fontPath = pathname.slice(8); // Remove "/_fonts/"
-      const fontFile = Bun.file(`./src/fonts/${fontPath}`);
-
-      if (fontFile.size > 0) {
-        return new Response(fontFile, {
-          headers: {
-            "Content-Type": "font/woff2",
-            "Cache-Control": "public, max-age=31536000, immutable",
-          },
+      try {
+        const fontFile = await readFile(`./src/fonts/${fontPath}`);
+        res.writeHead(200, {
+          "Content-Type": "font/woff2",
+          "Cache-Control": "public, max-age=31536000, immutable",
         });
+        res.end(fontFile);
+        return;
+      } catch {
+        sendResponse(res, 404, { "Content-Type": "text/plain" }, "Font not found");
+        return;
       }
     }
 
     // Route: Home page (directory index)
     if (pathname === "/") {
       const html = generateIndexPage(files, config, clientScript);
-      return new Response(html, {
-        headers: htmlHeaders(),
-      });
+      sendResponse(res, 200, htmlHeaders(), html);
+      return;
     }
 
     // Route: View markdown file
     const viewPath = parseViewPath(pathname);
     if (viewPath) {
-      return handleMarkdownView(viewPath, config, files, clientScript);
+      await handleMarkdownView(viewPath, config, files, clientScript, res);
+      return;
     }
 
     // 404 for unknown routes
@@ -147,17 +202,14 @@ const createHandler = (config: Config, files: MarkdownFile[], clientScript: stri
       config,
       clientScript,
     });
-    return new Response(notFoundHtml, {
-      status: 404,
-      headers: htmlHeaders(),
-    });
+    sendResponse(res, 404, htmlHeaders(), notFoundHtml);
   };
 };
 
 // WebSocket message handler
 const handleWebSocketMessage = (
-  ws: ServerWebSocket<{ file: string }>,
-  message: string | Buffer,
+  ws: WebSocket & { file?: string },
+  message: Buffer,
   config: Config
 ) => {
   try {
@@ -165,7 +217,8 @@ const handleWebSocketMessage = (
 
     if (data.type === "watch" && data.file) {
       // Start watching this file
-      watchFile(config.directory, data.file, ws);
+      ws.file = data.file;
+      watchFile(config.directory, data.file, ws as any);
     }
   } catch (err) {
     console.error("[ws] Failed to parse message:", err);
@@ -177,35 +230,62 @@ export const startServer = async (config: Config, files: MarkdownFile[]) => {
   // Bundle client scripts once at startup
   const clientScript = await getClientScriptTag();
 
-  const server = config.watch
-    ? Bun.serve<{ file: string }>({
-        port: config.port,
-        hostname: config.host,
-        fetch: createHandler(config, files, clientScript),
-        websocket: {
-          open(_ws) {
-            console.log("[ws] Client connected");
-          },
-          message(ws, message) {
-            handleWebSocketMessage(ws, message, config);
-          },
-          close(ws) {
-            console.log("[ws] Client disconnected");
-            // Stop watching all files for this client
-            if (ws.data?.file) {
-              unwatchFile(ws.data.file, ws);
-            }
-          },
-        },
-      })
-    : // @ts-expect-error - Bun types require websocket even when not used
-      Bun.serve<undefined>({
-        port: config.port,
-        hostname: config.host,
-        fetch: createHandler(config, files, clientScript),
+  const server = createServer(createHandler(config, files, clientScript));
+
+  // Setup WebSocket server if watch is enabled
+  let wss: WebSocketServer | undefined;
+  if (config.watch) {
+    wss = new WebSocketServer({ noServer: true });
+
+    // Handle WebSocket upgrade
+    server.on("upgrade", (request, socket, head) => {
+      const url = new URL(request.url ?? "/", `http://${request.headers.host}`);
+      if (url.pathname === "/_ws") {
+        wss?.handleUpgrade(request, socket, head, (ws) => {
+          wss?.emit("connection", ws, request);
+        });
+      } else {
+        socket.destroy();
+      }
+    });
+
+    wss.on("connection", (ws: WebSocket & { file?: string }) => {
+      console.log("[ws] Client connected");
+
+      ws.on("message", (message: Buffer) => {
+        handleWebSocketMessage(ws, message, config);
       });
 
-  return server;
+      ws.on("close", () => {
+        console.log("[ws] Client disconnected");
+        // Stop watching all files for this client
+        if (ws.file) {
+          unwatchFile(ws.file, ws as any);
+        }
+      });
+    });
+  }
+
+  // Start listening
+  await new Promise<void>((resolve) => {
+    server.listen(config.port, config.host, () => {
+      resolve();
+    });
+  });
+
+  // Get actual assigned port (important when using port 0)
+  const address = server.address();
+  const actualPort = typeof address === "object" && address !== null ? address.port : config.port;
+
+  // Return server-like object with consistent API
+  return {
+    hostname: config.host,
+    port: actualPort,
+    stop: () => {
+      wss?.close();
+      server.close();
+    },
+  };
 };
 
 // Pure function: get URL for server

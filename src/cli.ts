@@ -1,6 +1,9 @@
 // CLI argument parsing and validation (functional style)
 
+import { existsSync } from "node:fs";
 import { dirname, isAbsolute, resolve } from "node:path";
+import { fontExists, getAvailableFonts } from "./font-themes";
+import { getAvailableThemes, themeExists } from "./theme-config";
 import type { Config, ParsedArgs } from "./types";
 
 const VERSION = "0.1.0";
@@ -14,13 +17,17 @@ Arguments:
   path                     Directory or file to serve (default: current directory)
 
 Options:
-  --port <number>                   Port to bind to, 0 for auto (default: 0)
+  --port <number>                   Port to bind to (default: random)
   --host <string>                   Host interface (default: localhost)
-  --theme <light|dark>              UI theme (default: dark)
-  --font-theme <system|modern|editorial> Font theme (default: system)
+  --theme <name>                    Color theme (default: dark)
+                                    Built-in: dark, light, nord, dracula, solarized, monokai
+                                    Custom themes: ~/.config/llmd/themes.json
+  --fonts <name>                    Font combination (default: sans)
+                                    Built-in: serif, sans, mono, classic, future, modern, artsy, literary, editorial
+                                    Custom fonts: ~/.config/llmd/fonts.json
   --open / --no-open                Auto-open browser (default: --open)
   --watch / --no-watch              Reload on file changes (default: --no-watch)
-  --help                            Show this help
+  -h, --help                        Show this help
   --version                         Show version
 
 Examples:
@@ -28,8 +35,9 @@ Examples:
   llmd ./docs                       # Serve docs directory
   llmd README.md                    # Serve current dir, open to README.md
   llmd ./docs/API.md                # Serve docs dir, open to API.md
-  llmd --font-theme modern          # Use modern font theme
-  llmd --font-theme editorial       # Use editorial font theme
+  llmd --fonts modern               # Use modern font combo (Tajawal + Fira Code)
+  llmd --theme nord                 # Use Nord color theme
+  llmd --theme dracula --watch      # Dracula theme with live reload
 `;
 
 // Pure function: parse raw CLI arguments
@@ -43,7 +51,7 @@ export const parseArgs = (args: string[]): ParsedArgs => {
       continue;
     }
 
-    if (arg === "--help") {
+    if (arg === "--help" || arg === "-h") {
       flags.help = true;
     } else if (arg === "--version") {
       flags.version = true;
@@ -53,7 +61,7 @@ export const parseArgs = (args: string[]): ParsedArgs => {
       flags.host = args[++i];
     } else if (arg === "--theme") {
       flags.theme = args[++i];
-    } else if (arg === "--font-theme") {
+    } else if (arg === "--fonts") {
       flags.fontTheme = args[++i];
     } else if (arg === "--open") {
       flags.open = true;
@@ -97,8 +105,18 @@ export const createConfig = (parsed: ParsedArgs): Config => {
     initialFile,
     port: flags.port ?? 0,
     host: flags.host ?? "localhost",
-    theme: (flags.theme as "light" | "dark") ?? "dark",
-    fontTheme: (flags.fontTheme as "system" | "modern" | "editorial") ?? "system",
+    theme: flags.theme ?? "dark",
+    fontTheme:
+      (flags.fontTheme as
+        | "serif"
+        | "sans"
+        | "mono"
+        | "classic"
+        | "future"
+        | "modern"
+        | "artsy"
+        | "literary"
+        | "editorial") ?? "sans",
     open: flags.open ?? true,
     watch: flags.watch ?? false,
   };
@@ -106,13 +124,20 @@ export const createConfig = (parsed: ParsedArgs): Config => {
 
 // Side effect: validate config (throws on error)
 export const validateConfig = (config: Config): void => {
-  const dirExists = Bun.file(config.directory).exists();
-  if (!dirExists) {
+  if (!existsSync(config.directory)) {
     throw new Error(`Directory not found: ${config.directory}`);
   }
 
-  if (config.theme !== "light" && config.theme !== "dark") {
-    throw new Error(`Invalid theme: ${config.theme}. Must be "light" or "dark"`);
+  if (!themeExists(config.theme)) {
+    const available = getAvailableThemes();
+    throw new Error(`Theme "${config.theme}" not found. Available themes: ${available.join(", ")}`);
+  }
+
+  if (!fontExists(config.fontTheme)) {
+    const available = getAvailableFonts();
+    throw new Error(
+      `Font "${config.fontTheme}" not found. Available fonts: ${available.join(", ")}`
+    );
   }
 
   if (config.port < 0 || config.port > 65_535) {

@@ -1,25 +1,30 @@
+# Source files (built version is in dist/)
+src/
+index.ts
+*.test.ts
+
 # Development
 .github/
 .husky/
 .cursor/
 .claude/
+.vscode/
 test-fixtures/
 benchmarks/
 scripts/
-dist/
-
-# Tests
-*.test.ts
 
 # Config
-.vscode/
 biome.json
 tsconfig.json
+bun.lock
 
-# Internal docs
+# Docs
 AGENTS.md
 CLAUDE.md
 IMPLEMENTATION.md
 
-# Build artifacts
+# Build artifacts (keep dist/llmd)
+dist/llmd.js
+dist/llmd.js.map
+dist/llmd-*
 *.tgz

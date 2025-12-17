@@ -10,82 +10,12 @@ permissions:
   id-token: write  # Required for npm OIDC
 
 jobs:
-  build:
-    name: Build ${{ matrix.platform }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: macos-13
-            platform: macos-x64
-          - os: macos-14
-            platform: macos-arm64
-          - os: ubuntu-latest
-            platform: linux-x64
-
-    steps:
-      - uses: actions/checkout@v4
-      
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      
-      - name: Install dependencies
-        run: bun install
-      
-      - name: Build binary
-        run: ./scripts/build.sh
-        shell: bash
-      
-      - name: Rename binary to simple name
-        run: |
-          cd dist
-          ORIGINAL=$(ls llmd-*)
-          mv "$ORIGINAL" "llmd-${{ matrix.platform }}"
-          ls -lh llmd-${{ matrix.platform }}
-        shell: bash
-      
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: llmd-${{ matrix.platform }}
-          path: dist/llmd-${{ matrix.platform }}
-          
-  release:
-    name: Create GitHub Release
-    needs: build
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-      
-      - name: Display structure
-        run: ls -R artifacts
-      
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            artifacts/llmd-macos-arm64/llmd-macos-arm64
-            artifacts/llmd-macos-x64/llmd-macos-x64
-            artifacts/llmd-linux-x64/llmd-linux-x64
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-
   publish-npm:
     name: Publish to NPM
-    needs: release
     runs-on: ubuntu-latest
     permissions:
       id-token: write  # Required for OIDC
       contents: read
-    if: github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
     
     steps:
       - uses: actions/checkout@v4
@@ -105,6 +35,14 @@ jobs:
       
       - name: Run tests
         run: bun test
+      
+      - name: Build for npm (Node.js bundle)
+        run: bun run build:npm
+      
+      - name: Verify build output
+        run: |
+          ls -lh dist/llmd
+          node dist/llmd --version
       
       - name: Publish to NPM with provenance
         run: npm publish --provenance --access public

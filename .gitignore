@@ -6,6 +6,16 @@ out
 dist
 *.tgz
 
+# build artifacts
+llmd
+llmd.map
+*.tmp
+*.tmp.map
+test-output.*
+
+# preview generation
+preview-output/
+
 # code coverage
 coverage
 *.lcov

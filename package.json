@@ -12,19 +12,18 @@
   "bugs": {
     "url": "https://github.com/pbzona/llmd/issues"
   },
-  "module": "index.ts",
   "type": "module",
   "bin": {
-    "llmd": "./index.ts"
+    "llmd": "./dist/llmd"
   },
   "files": [
-    "src/",
-    "index.ts",
+    "dist/llmd",
+    "dist/client.js",
     "LICENSE",
     "README.md"
   ],
   "engines": {
-    "bun": ">=1.0.0"
+    "node": ">=22"
   },
   "publishConfig": {
     "access": "public"
@@ -32,9 +31,10 @@
   "scripts": {
     "dev": "bun --hot index.ts",
     "test": "bun test",
-    "build": "./scripts/build.sh",
-    "build:all": "echo 'Run this in CI for multi-platform builds'",
-    "install:local": "./scripts/install-local.sh",
+    "build": "rm -f dist/llmd dist/llmd.js* llmd.js* dist/client.js && mkdir -p dist && bun build --target=browser --minify ./src/client-bundle.ts --outfile=dist/client.js && bun build --target=node --minify --sourcemap ./index.ts --outfile=llmd.js && mv llmd.js* dist/ && sed -i '' '1s|#!/usr/bin/env bun|#!/usr/bin/env node|' dist/llmd.js && mv dist/llmd.js dist/llmd && chmod +x dist/llmd",
+    "prepublishOnly": "bun test && bun run build",
+    "preview": "bun scripts/generate-preview.ts",
+    "check-contrast": "bun scripts/check-contrast.ts",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "biome lint .",
@@ -50,9 +50,12 @@
     "llm"
   ],
   "dependencies": {
+    "@types/ws": "^8.18.1",
+    "fast-glob": "^3.3.3",
     "figlet": "^1.9.4",
     "marked": "^17.0.1",
-    "shiki": "^3.20.0"
+    "shiki": "^3.20.0",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.8",

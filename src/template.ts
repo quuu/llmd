@@ -1,18 +1,17 @@
-// HTML template generation (functional style)
+// HTML template generation
 
-import { generateFontFaces, getFontFamilies } from "./font-themes";
+import { generateFontImport, getFontFamilies } from "./font-themes";
 import { getThemeColors } from "./theme-config";
 import type { Config, MarkdownFile } from "./types";
 
 // Pure function: generate embedded CSS
-const getStyles = (theme: "light" | "dark", fontTheme: string): string => {
-  const isDark = theme === "dark";
-  const colors = getThemeColors(theme);
+const getStyles = (themeName: string, fontTheme: string): string => {
+  const colors = getThemeColors(themeName);
   const fontFamilies = getFontFamilies(fontTheme);
-  const fontFaces = generateFontFaces(fontTheme);
+  // Determine if theme is dark based on background brightness
+  const isDark = Number.parseInt(colors.bg.replace("#", ""), 16) < 0x80_80_80;
 
   return `
-    ${fontFaces}
     
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -55,6 +54,15 @@ const getStyles = (theme: "light" | "dark", fontTheme: string): string => {
       font-size: 1.25rem;
       font-weight: 700;
       letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .sidebar-header h1 svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
     }
     
     .sidebar-nav {
@@ -83,21 +91,21 @@ const getStyles = (theme: "light" | "dark", fontTheme: string): string => {
     }
     
     .sidebar-nav .dir-label {
-      padding: 6px 8px 6px 6px;
-      font-size: 0.875rem;
+      padding: 7px 8px 7px 6px;
+      font-size: 0.9375rem;
       font-weight: 600;
-      color: ${isDark ? "#999" : "#666"};
+      color: ${isDark ? "#b3b3b3" : "#666"};
       text-transform: none;
       position: relative;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       letter-spacing: 0.01em;
     }
     
     .sidebar-nav .dir-label svg {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       flex-shrink: 0;
       opacity: 0.9;
       color: ${colors.folderIcon};
@@ -107,20 +115,20 @@ const getStyles = (theme: "light" | "dark", fontTheme: string): string => {
     .sidebar-nav a {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 8px 6px 6px;
+      gap: 8px;
+      padding: 7px 8px 7px 6px;
       color: var(--fg);
       text-decoration: none;
       border-radius: 6px;
-      font-size: 0.875rem;
+      font-size: 0.9375rem;
       transition: background 0.15s;
       position: relative;
-      line-height: 1.5;
+      line-height: 1.4;
     }
     
     .sidebar-nav a svg {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       flex-shrink: 0;
       opacity: 0.8;
       color: ${colors.fileIcon};
@@ -143,7 +151,8 @@ const getStyles = (theme: "light" | "dark", fontTheme: string): string => {
     
     .sidebar-nav a.active {
       background: var(--accent);
-      color: white;
+      color: ${isDark ? "#000000" : "#ffffff"};
+      font-weight: 600;
     }
     
     .sidebar-nav a.active svg {
@@ -216,8 +225,8 @@ const getStyles = (theme: "light" | "dark", fontTheme: string): string => {
       max-width: 65ch;
     }
     .content li { 
-      margin: 0.5rem 0;
-      line-height: 1.7;
+      margin: 0.35rem 0;
+      line-height: 1.6;
     }
     
     .content a {
@@ -238,7 +247,7 @@ const getStyles = (theme: "light" | "dark", fontTheme: string): string => {
       border: 1px solid var(--border);
       position: relative;
       line-height: 1.6;
-      font-size: 0.875rem;
+      font-size: 0.9375rem;
     }
     
     .copy-button {
@@ -248,12 +257,13 @@ const getStyles = (theme: "light" | "dark", fontTheme: string): string => {
       padding: 4px 12px;
       font-size: 12px;
       background: var(--accent);
-      color: white;
+      color: ${isDark ? "#000000" : "#ffffff"};
       border: none;
       border-radius: 4px;
       cursor: pointer;
       opacity: 0;
       transition: opacity 0.2s;
+      font-weight: 600;
     }
     
     .content pre:hover .copy-button {
@@ -287,7 +297,7 @@ const getStyles = (theme: "light" | "dark", fontTheme: string): string => {
       border-left: 4px solid var(--accent);
       padding-left: 1.25rem;
       margin: 1.5rem 0;
-      color: ${isDark ? "#aaa" : "#666"};
+      color: ${isDark ? "#c0c0c0" : "#666"};
       font-style: italic;
       max-width: 65ch;
     }
@@ -329,8 +339,12 @@ const getStyles = (theme: "light" | "dark", fontTheme: string): string => {
     }
     
     .toc h3 {
-      font-size: 16px;
+      font-size: 0.875rem;
       margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: ${isDark ? "#b3b3b3" : "#666"};
     }
     
     .toc ul {
@@ -368,7 +382,7 @@ const getStyles = (theme: "light" | "dark", fontTheme: string): string => {
     
     .error p {
       font-size: 18px;
-      color: ${isDark ? "#aaa" : "#666"};
+      color: ${isDark ? "#c0c0c0" : "#666"};
     }
     
     @media (max-width: 768px) {
@@ -477,7 +491,7 @@ const renderTreeNodes = (nodes: TreeNode[], currentPath?: string): string =>
 // Pure function: generate file tree sidebar HTML
 const generateSidebar = (files: MarkdownFile[], currentPath?: string): string => {
   if (files.length === 0) {
-    return '<div class="sidebar-nav"><p style="padding: 12px; color: #999;">No markdown files found</p></div>';
+    return '<div class="sidebar-nav"><p style="padding: 12px; color: #b3b3b3;">No markdown files found</p></div>';
   }
 
   const tree = buildTree(files);
@@ -490,7 +504,7 @@ const generateSidebar = (files: MarkdownFile[], currentPath?: string): string =>
 type LayoutOptions = {
   content: string;
   title: string;
-  theme: "light" | "dark";
+  theme: string; // Theme name (built-in or custom)
   fontTheme: string;
   files: MarkdownFile[];
   currentPath?: string;
@@ -518,18 +532,38 @@ const baseLayout = (options: LayoutOptions): string => {
       ? `<script>window.addEventListener('load', () => window.connectFileWatcher?.('${watchFile}'));</script>`
       : "";
 
+  const fontImport = generateFontImport(fontTheme);
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} - llmd</title>
+  <link rel="icon" type="image/svg+xml" href="/_favicon">
+  ${fontImport}
   <style>${getStyles(theme, fontTheme)}</style>
 </head>
 <body>
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h1>llmd</h1>
+      <h1>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+          <defs>
+            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+          <path d="M16 6 L16 20 M16 20 L10 14 M16 20 L22 14" 
+                stroke="url(#logoGrad)" 
+                stroke-width="3" 
+                stroke-linecap="round" 
+                stroke-linejoin="round" 
+                fill="none"/>
+        </svg>
+        llmd
+      </h1>
     </div>
     ${generateSidebar(files, currentPath)}
   </aside>
@@ -550,29 +584,51 @@ export const generateIndexPage = (
   config: Config,
   clientScript?: string
 ): string => {
+  const asciiArt = `<pre style="font-family: monospace; font-size: 14px; line-height: 1.4; margin: 0 0 32px 0; white-space: pre;"><span style="color: #60a5fa;">dP dP                  dP</span>
+<span style="color: #60a5fa;">88 88                  88</span>
+<span style="color: #3b82f6;">88 88 88d8b.d8b. .d888b88</span>
+<span style="color: #3b82f6;">88 88 88'\`88'\`88 88'  \`88</span>
+<span style="color: #2563eb;">88 88 88  88  88 88.  .88</span>
+<span style="color: #1d4ed8;">dP dP dP  dP  dP \`88888P8</span></pre>`;
+
+  // Get top 3-4 files from root directory (depth 0)
+  const rootFiles = files.filter((f) => f.depth === 0).slice(0, 4);
+  const isDark = config.theme === "dark";
+  const fileList =
+    rootFiles.length > 0
+      ? `<div style="margin-top: 24px; text-align: left; display: inline-block;">
+         <ul style="list-style: none; padding: 0; margin: 0; font-size: 13px;">
+           ${rootFiles
+             .map(
+               (f) => `<li style="margin: 6px 0;">
+             <a href="/view/${f.path}" style="color: ${isDark ? "#a0a0a0" : "#666"}; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color 0.15s;">
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.6;">
+                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                 <polyline points="14 2 14 8 20 8"></polyline>
+               </svg>
+               ${f.name}
+             </a>
+           </li>`
+             )
+             .join("")}
+         </ul>
+       </div>`
+      : "";
+
   const content =
     files.length > 0
-      ? `<div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 40px;">
+      ? `<div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 80px 40px 40px 40px;">
          <div style="text-align: center;">
-           <pre style="font-family: monospace; font-size: 14px; line-height: 1.4; color: var(--fg); opacity: 0.6; margin: 0 0 32px 0;">dP dP                  dP 
-88 88                  88 
-88 88 88d8b.d8b. .d888b88 
-88 88 88'\`88'\`88 88'  \`88 
-88 88 88  88  88 88.  .88 
-dP dP dP  dP  dP \`88888P8</pre>
+           ${asciiArt}
            <p style="color: var(--fg); opacity: 0.5; font-size: 13px; margin: 0;">
              ${files.length} file${files.length === 1 ? "" : "s"}
            </p>
+           ${fileList}
          </div>
        </div>`
-      : `<div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 40px;">
+      : `<div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 80px 40px 40px 40px;">
          <div style="text-align: center;">
-           <pre style="font-family: monospace; font-size: 14px; line-height: 1.4; color: var(--fg); opacity: 0.6; margin: 0 0 32px 0;">dP dP                  dP 
-88 88                  88 
-88 88 88d8b.d8b. .d888b88 
-88 88 88'\`88'\`88 88'  \`88 
-88 88 88  88  88 88.  .88 
-dP dP dP  dP  dP \`88888P8</pre>
+           ${asciiArt}
            <p style="color: var(--fg); opacity: 0.5; font-size: 13px; margin: 0;">
              No markdown files found
            </p>

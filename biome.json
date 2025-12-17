@@ -51,7 +51,8 @@
       "!**/build",
       "!**/.next",
       "!**/coverage",
-      "!**/*.min.js"
+      "!**/*.min.js",
+      "!scripts/check-contrast.ts"
     ]
   },
   "extends": ["ultracite/core"]

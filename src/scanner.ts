@@ -1,6 +1,5 @@
-// Directory scanning and file discovery (functional style)
-
-import { type Stats, statSync } from "node:fs";
+// Directory scanning and file discovery
+import { readdirSync, type Stats, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import type { MarkdownFile, ScanOptions } from "./types";
 
@@ -42,7 +41,7 @@ const scanDirectory = async (
     return [];
   }
 
-  const entries = await Array.fromAsync(new Bun.Glob("*").scan({ cwd: dir, onlyFiles: false }));
+  const entries = readdirSync(dir);
 
   const results: MarkdownFile[] = [];
 

@@ -18,8 +18,20 @@ export const extractHeadings = (
 ): Array<{ level: number; text: string; id: string }> => {
   const headings: Array<{ level: number; text: string; id: string }> = [];
   const lines = markdown.split("\n");
+  let inCodeBlock = false;
 
   for (const line of lines) {
+    // Track code fence boundaries (``` or ~~~)
+    if (line.trim().startsWith("```") || line.trim().startsWith("~~~")) {
+      inCodeBlock = !inCodeBlock;
+      continue;
+    }
+
+    // Skip lines inside code blocks
+    if (inCodeBlock) {
+      continue;
+    }
+
     const match = line.match(HEADING_REGEX);
     if (match) {
       const level = match[1]!.length;
@@ -113,8 +125,10 @@ const applySyntaxHighlighting = async (html: string, theme: "light" | "dark"): P
 // Combined function: full markdown processing pipeline
 export const processMarkdown = async (
   markdown: string,
-  theme: "light" | "dark" = "light"
+  themeName = "light"
 ): Promise<{ html: string; toc: string }> => {
+  // Determine if theme is dark for syntax highlighting
+  const theme = themeName === "light" || themeName === "solarized" ? "light" : "dark";
   const headings = extractHeadings(markdown);
   const rawHtml = renderMarkdown(markdown);
   const htmlWithIds = addHeadingIds(rawHtml);

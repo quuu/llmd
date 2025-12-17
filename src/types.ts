@@ -9,8 +9,8 @@ export type Config = {
   port: number;
   host: string;
   // UI options
-  theme: "light" | "dark";
-  fontTheme: "system" | "modern" | "editorial";
+  theme: string; // Theme name (built-in or custom)
+  fontTheme: string; // Font name (built-in or custom)
   // Behavior flags
   open: boolean;
   watch: boolean;

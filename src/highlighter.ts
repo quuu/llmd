@@ -1,16 +1,100 @@
-// Syntax highlighting with Shiki (functional style)
+// Syntax highlighting with Shiki
+import { createHighlighterCore, type HighlighterCore } from "shiki/core";
+import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 
-import { type BundledLanguage, codeToHtml } from "shiki";
+// Import only specific language grammars we need
+import bash from "shiki/langs/bash.mjs";
+import c from "shiki/langs/c.mjs";
+import cpp from "shiki/langs/cpp.mjs";
+import csharp from "shiki/langs/csharp.mjs";
+import css from "shiki/langs/css.mjs";
+import dockerfile from "shiki/langs/dockerfile.mjs";
+import go from "shiki/langs/go.mjs";
+import html from "shiki/langs/html.mjs";
+import java from "shiki/langs/java.mjs";
+import javascript from "shiki/langs/javascript.mjs";
+import json from "shiki/langs/json.mjs";
+import jsx from "shiki/langs/jsx.mjs";
+import kotlin from "shiki/langs/kotlin.mjs";
+import markdown from "shiki/langs/markdown.mjs";
+import php from "shiki/langs/php.mjs";
+import python from "shiki/langs/python.mjs";
+import ruby from "shiki/langs/ruby.mjs";
+import rust from "shiki/langs/rust.mjs";
+import scss from "shiki/langs/scss.mjs";
+import shell from "shiki/langs/shellscript.mjs";
+import sql from "shiki/langs/sql.mjs";
+import swift from "shiki/langs/swift.mjs";
+import toml from "shiki/langs/toml.mjs";
+import tsx from "shiki/langs/tsx.mjs";
+import typescript from "shiki/langs/typescript.mjs";
+import xml from "shiki/langs/xml.mjs";
+import yaml from "shiki/langs/yaml.mjs";
+
+// Import only the themes we use
+import githubDark from "shiki/themes/github-dark.mjs";
+import githubLight from "shiki/themes/github-light.mjs";
+
+// Lazy-initialized highlighter singleton
+let highlighter: HighlighterCore | null = null;
+
+// Map of language names to their grammar modules (these are arrays)
+const languageModules = {
+  javascript,
+  typescript,
+  jsx,
+  tsx,
+  json,
+  html,
+  css,
+  scss,
+  python,
+  rust,
+  go,
+  java,
+  c,
+  cpp,
+  csharp,
+  php,
+  ruby,
+  swift,
+  kotlin,
+  bash,
+  shell,
+  sql,
+  yaml,
+  toml,
+  markdown,
+  xml,
+  dockerfile,
+};
+
+// Initialize highlighter with only the languages we need
+const getHighlighter = async (): Promise<HighlighterCore> => {
+  if (!highlighter) {
+    // Flatten all language arrays into single array
+    const allLangs = Object.values(languageModules).flat();
+
+    highlighter = await createHighlighterCore({
+      langs: allLangs,
+      themes: [githubLight, githubDark],
+      engine: createJavaScriptRegexEngine(),
+    });
+  }
+  return highlighter;
+};
+
+type SupportedLanguage = keyof typeof languageModules;
 
 // Pure function: detect language from code fence or auto-detect
-const detectLanguage = (lang: string | undefined): BundledLanguage | "plaintext" => {
+const detectLanguage = (lang: string | undefined): SupportedLanguage | "plaintext" => {
   if (!lang) {
     return "plaintext";
   }
 
   // Normalize common aliases
   const langLower = lang.toLowerCase();
-  const aliases: Record<string, BundledLanguage> = {
+  const aliases: Record<string, SupportedLanguage> = {
     js: "javascript",
     ts: "typescript",
     py: "python",
@@ -24,40 +108,8 @@ const detectLanguage = (lang: string | undefined): BundledLanguage | "plaintext"
 
   const normalized = aliases[langLower] || langLower;
 
-  // Common languages we want to support
-  const validLangs: BundledLanguage[] = [
-    "javascript",
-    "typescript",
-    "jsx",
-    "tsx",
-    "json",
-    "html",
-    "css",
-    "scss",
-    "python",
-    "rust",
-    "go",
-    "java",
-    "c",
-    "cpp",
-    "csharp",
-    "php",
-    "ruby",
-    "swift",
-    "kotlin",
-    "bash",
-    "shell",
-    "sql",
-    "yaml",
-    "toml",
-    "markdown",
-    "xml",
-    "dockerfile",
-  ];
-
-  return validLangs.includes(normalized as BundledLanguage)
-    ? (normalized as BundledLanguage)
-    : "plaintext";
+  // Check if it's a supported language
+  return normalized in languageModules ? (normalized as SupportedLanguage) : "plaintext";
 };
 
 // Pure function: highlight code with Shiki
@@ -70,13 +122,16 @@ export const highlightCode = async (
     const language = detectLanguage(lang);
     const shikiTheme = theme === "light" ? "github-light" : "github-dark";
 
-    // Use Shiki's codeToHtml directly
-    const html = await codeToHtml(code, {
+    // Get highlighter instance (lazy-loaded)
+    const hl = await getHighlighter();
+
+    // Use highlighter's codeToHtml method
+    const htmlOutput = hl.codeToHtml(code, {
       lang: language,
       theme: shikiTheme,
     });
 
-    return html;
+    return htmlOutput;
   } catch (error) {
     console.error("Syntax highlighting failed:", error);
     // Fallback to plain text

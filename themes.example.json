@@ -1,0 +1,65 @@
+{
+  "_comment": "Unified configuration for llmd themes and fonts",
+  "_location": "Copy to ~/.config/llmd/themes.json or $XDG_CONFIG_HOME/llmd/themes.json",
+
+  "colorThemes": {
+    "cyberpunk": {
+      "bg": "#0a0e27",
+      "fg": "#00ff9f",
+      "border": "#1a1f3a",
+      "hover": "#1a1f3a",
+      "accent": "#ff00aa",
+      "codeBg": "#0f1729",
+      "sidebarBg": "#050811",
+      "folderIcon": "#00d4ff",
+      "fileIcon": "#ff00aa"
+    },
+    "forest": {
+      "bg": "#1a2f1a",
+      "fg": "#d4e7d4",
+      "border": "#2d4a2d",
+      "hover": "#2d4a2d",
+      "accent": "#7fb069",
+      "codeBg": "#243824",
+      "sidebarBg": "#152015",
+      "folderIcon": "#b7ce63",
+      "fileIcon": "#f9a03f"
+    },
+    "ocean": {
+      "bg": "#0c1e2e",
+      "fg": "#c9e6f5",
+      "border": "#1a3a52",
+      "hover": "#1a3a52",
+      "accent": "#4fc3f7",
+      "codeBg": "#163447",
+      "sidebarBg": "#071420",
+      "folderIcon": "#81d4fa",
+      "fileIcon": "#ffb74d"
+    }
+  },
+
+  "fontThemes": {
+    "techie": {
+      "heading": "JetBrains Mono, monospace",
+      "body": "Inter, sans-serif",
+      "code": "JetBrains Mono, monospace"
+    },
+    "minimal": {
+      "heading": "Work Sans, sans-serif",
+      "body": "Work Sans, sans-serif",
+      "code": "IBM Plex Mono, monospace"
+    },
+    "elegant": {
+      "heading": "Montserrat, sans-serif",
+      "body": "Open Sans, sans-serif",
+      "code": "Source Code Pro, monospace"
+    },
+    "with-custom-url": {
+      "_note": "Use googleFontsUrl only if you need custom weights (300, 500, 600) or styles",
+      "heading": "Poppins, sans-serif",
+      "body": "Inter, sans-serif",
+      "code": "Fira Code, monospace",
+      "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&family=Fira+Code:wght@400;500&display=swap"
+    }
+  }
+}

@@ -52,7 +52,7 @@ const main = async () => {
     // Open browser if requested (with a small delay to let server fully start)
     if (config.open) {
       await new Promise((resolve) => setTimeout(resolve, 300));
-      await openBrowser(initialUrl);
+      openBrowser(initialUrl);
     }
 
     // Handle graceful shutdown
