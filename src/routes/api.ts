@@ -174,6 +174,13 @@ const handleHighlightsRoute = async (ctx: RouteContext): Promise<boolean> => {
     return true;
   }
 
+  // Export highlights
+  if (ctx.pathname === "/api/highlights/export" && ctx.req.method === "POST") {
+    const { handleExportHighlights } = await import("./highlights");
+    await handleExportHighlights(ctx.req, ctx.res, { config: ctx.config, db });
+    return true;
+  }
+
   // Restore file from backup
   const isRestoreRoute =
     ctx.pathname.startsWith("/api/highlights/") && ctx.pathname.endsWith("/restore");

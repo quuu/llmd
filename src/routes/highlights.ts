@@ -8,6 +8,7 @@ import {
   computeFileHash,
   createHighlight,
   deleteHighlight,
+  generateMarkdownExport,
   getHighlightsByDirectory,
   getHighlightsByResource,
   getResourceByPath,
@@ -16,6 +17,7 @@ import {
   updateHighlight,
   updateResourceBackup,
   validateHighlight,
+  writeMarkdownExport,
 } from "../highlights";
 import type { Config } from "../types";
 
@@ -321,5 +323,41 @@ export const handleRestoreFile = async (
   } catch (err) {
     console.error("[highlights] Failed to restore file:", err);
     sendJson(res, 500, { error: "Failed to restore file" });
+  }
+};
+
+// POST /api/highlights/export - Export highlights to markdown
+export const handleExportHighlights = async (
+  req: IncomingMessage,
+  res: ServerResponse,
+  ctx: RouteContext
+): Promise<void> => {
+  try {
+    const body = (await parseJsonBody(req)) as {
+      directory?: string;
+    };
+
+    const targetDirectory = body.directory || ctx.config.directory;
+
+    // Get highlights for directory
+    const highlights = getHighlightsByDirectory(ctx.db, targetDirectory);
+
+    if (highlights.length === 0) {
+      sendJson(res, 400, { error: "No highlights to export" });
+      return;
+    }
+
+    // Generate filename with date
+    const dateStr = new Date().toISOString().replace(/[:.]/g, "-").split("T")[0];
+    const filename = `highlights-export-${dateStr}.md`;
+
+    // Generate and write export
+    const content = generateMarkdownExport(highlights, targetDirectory);
+    const exportPath = writeMarkdownExport(content, filename);
+
+    sendJson(res, 200, { filePath: exportPath, filename, count: highlights.length });
+  } catch (err) {
+    console.error("[highlights] Failed to export highlights:", err);
+    sendJson(res, 500, { error: "Failed to export highlights" });
   }
 };

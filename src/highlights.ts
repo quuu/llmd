@@ -472,3 +472,46 @@ export const directoryHasHighlights = (db: any, directoryPath: string): boolean 
   const result = stmt.get(`${directoryPath}%`) as { count: number };
   return result.count > 0;
 };
+
+// Pure function: format timestamp as ISO date string
+const formatIsoDate = (timestamp: number): string => new Date(timestamp).toISOString();
+
+// Pure function: generate markdown export content from highlights
+export const generateMarkdownExport = (
+  highlights: Array<{
+    resourcePath: string;
+    highlightedText: string;
+    notes: string | null;
+    createdAt: number;
+  }>,
+  directoryPath: string
+): string => {
+  const timestamp = formatIsoDate(Date.now());
+  const header = `# Highlights Export\n\n**Directory:** ${directoryPath}\n**Exported:** ${timestamp}\n**Total Highlights:** ${highlights.length}\n\n---\n\n`;
+
+  const highlightBlocks = highlights
+    .map((h) => {
+      const fileName = basename(h.resourcePath);
+      const date = formatIsoDate(h.createdAt);
+      const notesSection = h.notes ? `\n\n**Note:**\n${h.notes}\n` : "";
+
+      return `## ${fileName}\n\n**Created:** ${date}\n\n> ${h.highlightedText}${notesSection}`;
+    })
+    .join("\n\n---\n\n");
+
+  return header + highlightBlocks;
+};
+
+// Side effect: write markdown export to file
+// Returns the absolute path of the written file
+export const writeMarkdownExport = (content: string, filename: string): string => {
+  const { ensureExportsDirectory } = require("./config");
+  const { writeFileSync } = require("node:fs");
+
+  const exportsDir = ensureExportsDirectory();
+  const filePath = join(exportsDir, filename);
+
+  writeFileSync(filePath, content, "utf-8");
+
+  return filePath;
+};
