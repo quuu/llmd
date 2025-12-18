@@ -14,12 +14,14 @@ llmd - Serve Markdown files as beautiful HTML
 
 Usage:
   llmd [path] [options]
+  llmd docs
   llmd analytics [subcommand] [path] [options]
 
 Arguments:
   path                     Directory or file to serve (default: current directory)
 
 Commands:
+  docs                     View llmd documentation (clones repo to ~/.local/share/llmd)
   analytics [subcommand]   Manage analytics
     view [path]            Open to analytics page (default subcommand)
     enable                 Enable analytics tracking
@@ -40,6 +42,7 @@ Options:
 
 Examples:
   llmd                              # Serve current directory
+  llmd docs                         # View llmd documentation
   llmd ./docs                       # Serve docs directory
   llmd README.md                    # Serve current dir, open to README.md
   llmd ./docs/API.md                # Serve docs dir, open to API.md
@@ -67,6 +70,8 @@ export const parseArgs = (args: string[]): ParsedArgs => {
       flags.help = true;
     } else if (arg === "--version") {
       flags.version = true;
+    } else if (arg === "docs") {
+      flags.docs = true;
     } else if (arg === "analytics") {
       flags.analytics = true;
       // Check for subcommand
@@ -195,6 +200,10 @@ export const parseCli = (args: string[]): CliResult => {
   if (parsed.flags.version) {
     printVersion();
     return { type: "exit" };
+  }
+
+  if (parsed.flags.docs) {
+    return { type: "docs" };
   }
 
   // Handle analytics subcommands

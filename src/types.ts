@@ -37,6 +37,7 @@ export type ParsedArgs = {
     version?: boolean;
     analytics?: boolean;
     analyticsSubcommand?: "view" | "enable" | "disable";
+    docs?: boolean;
   };
 };
 
@@ -44,6 +45,7 @@ export type CliResult =
   | { type: "config"; config: Config }
   | { type: "analytics-enable" }
   | { type: "analytics-disable" }
+  | { type: "docs" }
   | { type: "exit" };
 
 export type ScanOptions = {

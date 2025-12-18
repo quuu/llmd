@@ -2,12 +2,79 @@
 
 // Main entrypoint
 
+import { execSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { openBrowser } from "./src/browser";
 import { parseCli } from "./src/cli";
 import { disableAnalytics, enableAnalytics, saveThemePreferences } from "./src/events";
 import { getRelativePath, scanMarkdownFiles } from "./src/scanner";
 import { getServerUrl, startServer } from "./src/server";
 import { printSplash } from "./src/splash";
+
+// Side effect: Clone or update llmd repo and launch server
+const handleDocsCommand = async (): Promise<void> => {
+  const REPO_URL = "https://github.com/pbzona/llmd";
+
+  // Determine data directory (XDG_DATA_HOME or ~/.local/share)
+  const xdgDataHome = process.env.XDG_DATA_HOME;
+  const dataDir = xdgDataHome || join(homedir(), ".local", "share");
+  const docsPath = join(dataDir, "llmd-docs");
+
+  console.log("→ Preparing llmd documentation...\n");
+
+  // Clone if doesn't exist, otherwise use cached
+  if (existsSync(docsPath)) {
+    console.log(`→ Using cached documentation at ${docsPath}`);
+    console.log(`  (Run 'rm -rf "${docsPath}"' to re-clone)\n`);
+  } else {
+    console.log(`→ Cloning llmd repository to ${docsPath}...`);
+    try {
+      execSync(`git clone ${REPO_URL} "${docsPath}"`, { stdio: "inherit" });
+      console.log("✓ Repository cloned successfully\n");
+    } catch (error) {
+      throw new Error(
+        `Failed to clone repository: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  // Start server with docs path
+  const result = parseCli([docsPath, "--open"]);
+  if (result.type !== "config") {
+    throw new Error("Unexpected result from parseCli");
+  }
+
+  const config = result.config;
+
+  // Scan and start server
+  const files = await scanMarkdownFiles(config.directory);
+  const server = await startServer(config, files);
+  const url = getServerUrl(server);
+
+  let initialUrl = url;
+  if (config.initialFile) {
+    const relativePath = getRelativePath(config.initialFile, config.directory);
+    initialUrl = `${url}/view/${relativePath}`;
+  }
+
+  console.log(`▸ Server running at ${url}`);
+  console.log(`  Theme: ${config.theme}`);
+  console.log("\n  Press Ctrl+C to stop\n");
+
+  if (config.open) {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    openBrowser(initialUrl);
+  }
+
+  // Handle graceful shutdown
+  process.on("SIGINT", () => {
+    console.log("\n\n✓ Shutting down...");
+    server.stop();
+    process.exit(0);
+  });
+};
 
 // Main async function
 const main = async () => {
@@ -31,6 +98,11 @@ const main = async () => {
 
     if (result.type === "analytics-disable") {
       disableAnalytics();
+      process.exit(0);
+    }
+
+    if (result.type === "docs") {
+      await handleDocsCommand();
       process.exit(0);
     }
 
