@@ -2,7 +2,7 @@
 
 **Serve Markdown as beautiful HTML. Instantly.**
 
-A zero-config CLI tool for viewing Markdown files in your browser with syntax highlighting, live reload, and a clean interface. Built for developers reviewing LLM-generated documentation.
+A minimal CLI tool for viewing Markdown files in your browser with syntax highlighting, live reload, and a clean interface. Built for developers reviewing LLM-generated documentation.
 
 ## Installation
 
@@ -38,7 +38,7 @@ Now click through the sidebar to explore the documentation. The analytics page w
 
 ## Features
 
-- **Zero config** - Point at a directory and go
+- **Simple setup** - Point at a directory and go
 - **Syntax highlighting** - Powered by Shiki
 - **Live reload** - Watch mode reloads on file changes
 - **Copy buttons** - One-click code copying

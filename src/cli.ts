@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fontExists, getAvailableFonts } from "./font-themes";
 import { getAvailableThemes, themeExists } from "./theme-config";
-import type { Config, ParsedArgs } from "./types";
+import type { CliResult, Config, ParsedArgs } from "./types";
 
 const VERSION = "0.1.0";
 const HELP_TEXT = `
@@ -12,13 +12,16 @@ llmd - Serve Markdown files as beautiful HTML
 
 Usage:
   llmd [path] [options]
-  llmd analytics [path] [options]
+  llmd analytics [subcommand] [path] [options]
 
 Arguments:
   path                     Directory or file to serve (default: current directory)
 
 Commands:
-  analytics                Open directly to the analytics page
+  analytics [subcommand]   Manage analytics
+    view [path]            Open to analytics page (default subcommand)
+    enable                 Enable analytics tracking
+    disable                Disable analytics tracking
 
 Options:
   --port <number>                   Port to bind to (default: random)
@@ -39,7 +42,9 @@ Examples:
   llmd README.md                    # Serve current dir, open to README.md
   llmd ./docs/API.md                # Serve docs dir, open to API.md
   llmd analytics                    # Open to analytics page
-  llmd analytics ~/my-project       # Open analytics for specific project
+  llmd analytics view ~/my-project  # Open analytics for specific project
+  llmd analytics enable             # Enable analytics tracking
+  llmd analytics disable            # Disable analytics tracking
   llmd --fonts modern               # Use modern font combo (Tajawal + Fira Code)
   llmd --theme nord                 # Use Nord color theme
   llmd --theme dracula --watch      # Dracula theme with live reload
@@ -62,6 +67,15 @@ export const parseArgs = (args: string[]): ParsedArgs => {
       flags.version = true;
     } else if (arg === "analytics") {
       flags.analytics = true;
+      // Check for subcommand
+      const nextArg = args[i + 1];
+      if (nextArg === "enable" || nextArg === "disable" || nextArg === "view") {
+        flags.analyticsSubcommand = nextArg;
+        i += 1; // Skip the subcommand
+      } else {
+        // Default to "view"
+        flags.analyticsSubcommand = "view";
+      }
     } else if (arg === "--port") {
       flags.port = Number.parseInt(args[++i] ?? "0", 10);
     } else if (arg === "--theme") {
@@ -160,21 +174,32 @@ export const printVersion = (): void => {
 };
 
 // Main CLI handler (coordinates pure functions + side effects)
-export const parseCli = (args: string[]): Config | null => {
+export const parseCli = (args: string[]): CliResult => {
   const parsed = parseArgs(args);
 
   if (parsed.flags.help) {
     printHelp();
-    return null;
+    return { type: "exit" };
   }
 
   if (parsed.flags.version) {
     printVersion();
-    return null;
+    return { type: "exit" };
+  }
+
+  // Handle analytics subcommands
+  if (parsed.flags.analytics && parsed.flags.analyticsSubcommand) {
+    if (parsed.flags.analyticsSubcommand === "enable") {
+      return { type: "analytics-enable" };
+    }
+    if (parsed.flags.analyticsSubcommand === "disable") {
+      return { type: "analytics-disable" };
+    }
+    // "view" continues to normal flow
   }
 
   const config = createConfig(parsed);
   validateConfig(config);
 
-  return config;
+  return { type: "config", config };
 };

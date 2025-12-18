@@ -36,8 +36,15 @@ export type ParsedArgs = {
     help?: boolean;
     version?: boolean;
     analytics?: boolean;
+    analyticsSubcommand?: "view" | "enable" | "disable";
   };
 };
+
+export type CliResult =
+  | { type: "config"; config: Config }
+  | { type: "analytics-enable" }
+  | { type: "analytics-disable" }
+  | { type: "exit" };
 
 export type ScanOptions = {
   // Root directory to scan

@@ -87,6 +87,14 @@ const initializeDatabase = (db: any): void => {
     );
   `);
 
+  // Create configuration table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS config (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+  `);
+
   // Create indexes
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_events_resource_id ON events(resource_id);
@@ -216,13 +224,41 @@ const checkDatabaseSize = (dbPath: string): void => {
   }
 };
 
-// Public function: initialize event service
-export const initEventService = (config: Config, dbPath?: string): EventService | null => {
-  // Check if events are enabled (opt-in)
-  if (!process.env.LLMD_ENABLE_EVENTS) {
+// Pure function: get config value from database
+// biome-ignore lint/suspicious/noExplicitAny: Runtime compatibility layer
+const getConfigValue = (db: any, key: string): string | null => {
+  try {
+    const stmt = db.prepare("SELECT value FROM config WHERE key = ?");
+    const row = stmt.get(key) as { value: string } | undefined;
+    return row?.value ?? null;
+  } catch {
     return null;
   }
+};
 
+// Side effect: set config value in database
+// biome-ignore lint/suspicious/noExplicitAny: Runtime compatibility layer
+const setConfigValue = (db: any, key: string, value: string): void => {
+  const stmt = db.prepare("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)");
+  stmt.run(key, value);
+};
+
+// Pure function: check if analytics is enabled
+// Priority: 1) Environment variable, 2) Database config
+// biome-ignore lint/suspicious/noExplicitAny: Runtime compatibility layer
+const isAnalyticsEnabled = (db: any): boolean => {
+  // Environment variable takes precedence
+  if (process.env.LLMD_ENABLE_EVENTS) {
+    return true;
+  }
+
+  // Check database config
+  const configValue = getConfigValue(db, "analytics_enabled");
+  return configValue === "true";
+};
+
+// Public function: initialize event service
+export const initEventService = (config: Config, dbPath?: string): EventService | null => {
   const actualDbPath = dbPath || resolveDatabasePath();
 
   // Check database size and warn if large
@@ -232,6 +268,13 @@ export const initEventService = (config: Config, dbPath?: string): EventService 
 
   // Initialize schema
   initializeDatabase(db);
+
+  // Check if events are enabled (opt-in)
+  // Priority: 1) Environment variable, 2) Database config
+  if (!isAnalyticsEnabled(db)) {
+    db.close();
+    return null;
+  }
 
   // In-memory map for path -> resource ID lookups
   const pathMap = new Map<string, string>();
@@ -448,4 +491,65 @@ export const initEventService = (config: Config, dbPath?: string): EventService 
     getActivityTimeSeries,
     close,
   };
+};
+
+// Public function: enable analytics (sets database config)
+export const enableAnalytics = (): void => {
+  const dbPath = resolveDatabasePath();
+  const db = createDatabase(dbPath);
+
+  // Initialize schema if needed
+  initializeDatabase(db);
+
+  // Set config
+  setConfigValue(db, "analytics_enabled", "true");
+
+  db.close();
+
+  console.log("[events] Analytics enabled");
+  console.log(`[events] Database: ${dbPath}`);
+};
+
+// Public function: disable analytics (sets database config)
+export const disableAnalytics = (): void => {
+  const dbPath = resolveDatabasePath();
+  const db = createDatabase(dbPath);
+
+  // Initialize schema if needed
+  initializeDatabase(db);
+
+  // Set config
+  setConfigValue(db, "analytics_enabled", "false");
+
+  db.close();
+
+  console.log("[events] Analytics disabled");
+};
+
+// Public function: check analytics status
+export const getAnalyticsStatus = (): {
+  enabled: boolean;
+  source: "environment" | "database" | "disabled";
+} => {
+  // Check environment variable first
+  if (process.env.LLMD_ENABLE_EVENTS) {
+    return { enabled: true, source: "environment" };
+  }
+
+  // Check database
+  try {
+    const dbPath = resolveDatabasePath();
+    const db = createDatabase(dbPath);
+    initializeDatabase(db);
+    const configValue = getConfigValue(db, "analytics_enabled");
+    db.close();
+
+    if (configValue === "true") {
+      return { enabled: true, source: "database" };
+    }
+  } catch {
+    // Database doesn't exist or can't be read
+  }
+
+  return { enabled: false, source: "disabled" };
 };

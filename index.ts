@@ -4,6 +4,7 @@
 
 import { openBrowser } from "./src/browser";
 import { parseCli } from "./src/cli";
+import { disableAnalytics, enableAnalytics } from "./src/events";
 import { getRelativePath, scanMarkdownFiles } from "./src/scanner";
 import { getServerUrl, startServer } from "./src/server";
 import { printSplash } from "./src/splash";
@@ -16,12 +17,25 @@ const main = async () => {
     console.log();
 
     // Parse CLI arguments
-    const config = parseCli(process.argv.slice(2));
+    const result = parseCli(process.argv.slice(2));
 
-    // Exit early for --help or --version
-    if (!config) {
+    // Handle different result types
+    if (result.type === "exit") {
       process.exit(0);
     }
+
+    if (result.type === "analytics-enable") {
+      enableAnalytics();
+      process.exit(0);
+    }
+
+    if (result.type === "analytics-disable") {
+      disableAnalytics();
+      process.exit(0);
+    }
+
+    // Must be config type
+    const config = result.config;
 
     // Scan for markdown files
     console.log(`→ Scanning ${config.directory}...`);
