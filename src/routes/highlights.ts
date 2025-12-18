@@ -347,9 +347,11 @@ export const handleExportHighlights = async (
       return;
     }
 
-    // Generate filename with date
+    // Generate filename: nameOfDirectory-YYYY-MM-DD.md
     const dateStr = new Date().toISOString().replace(/[:.]/g, "-").split("T")[0];
-    const filename = `highlights-export-${dateStr}.md`;
+    const { basename } = await import("node:path");
+    const dirName = basename(targetDirectory);
+    const filename = `${dirName}-${dateStr}.md`;
 
     // Generate and write export
     const content = generateMarkdownExport(highlights, targetDirectory);
