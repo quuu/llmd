@@ -8,7 +8,7 @@ llmd includes built-in usage analytics to help you understand which documentatio
 - **Activity Timeline** - 7-day chart of your documentation views
 - **Zero-View Detection** - Find docs you generated but never read
 - **Directory Filtering** - View analytics for current project or all history
-- **Privacy-First** - All data stored locally at `~/.local/share/llmd/events.db`
+- **Privacy-First** - All data stored locally at `~/.local/share/llmd/llmd.db`
 
 ## Commands
 
@@ -45,7 +45,7 @@ Enable analytics tracking:
 llmd analytics enable
 ```
 
-This stores the setting in the database at `~/.local/share/llmd/events.db`. Analytics will remain enabled until you explicitly disable it.
+This stores the setting in the database at `~/.local/share/llmd/llmd.db`. Analytics will remain enabled until you explicitly disable it.
 
 ### Disable Analytics
 
@@ -76,7 +76,7 @@ llmd checks for analytics enablement in this order:
 
 Analytics is **opt-in** and respects your privacy:
 
-- All data is stored locally in `~/.local/share/llmd/events.db` (or `$XDG_DATA_HOME/llmd/events.db`)
+- All data is stored locally in `~/.local/share/llmd/llmd.db` (or `$XDG_DATA_HOME/llmd/llmd.db`)
 - No data is ever sent to external servers
 - No personal information is collected beyond file paths and view counts
 - Database can be deleted at any time
@@ -122,7 +122,7 @@ llmd will warn you if the analytics database exceeds 50MB:
 
 ```
 [events] Database size is 51.00MB (threshold: 50MB)
-[events] Consider deleting old data: rm ~/.local/share/llmd/events.db
+[events] Consider deleting old data: rm ~/.local/share/llmd/llmd.db
 ```
 
 ### Manual Cleanup
@@ -130,7 +130,7 @@ llmd will warn you if the analytics database exceeds 50MB:
 To reset all analytics data, simply delete the database:
 
 ```bash
-rm ~/.local/share/llmd/events.db
+rm ~/.local/share/llmd/llmd.db
 ```
 
 The database will be recreated automatically the next time you run llmd with analytics enabled.

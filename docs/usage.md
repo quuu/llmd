@@ -52,8 +52,8 @@ llmd ./docs
 llmd ./docs --theme dracula
 ```
 
-Your preferences are stored in `~/.local/share/llmd/events.db` and persist across sessions. To reset to defaults, delete the database:
+Your preferences are stored in `~/.local/share/llmd/llmd.db` and persist across sessions. To reset to defaults, delete the database:
 
 ```bash
-rm ~/.local/share/llmd/events.db
+rm ~/.local/share/llmd/llmd.db
 ```

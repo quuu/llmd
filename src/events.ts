@@ -39,7 +39,7 @@ const resolveDatabasePath = (): string => {
     mkdirSync(llmdDir, { recursive: true });
   }
 
-  return join(llmdDir, "events.db");
+  return join(llmdDir, "llmd.db");
 };
 
 // Pure function: check if path should be ignored (relative to root)
