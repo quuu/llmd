@@ -23,18 +23,14 @@ Requires Node.js 22 or later.
 Want to see what llmd can do? **Try it on its own documentation:**
 
 ```bash
-# Clone this repo
-git clone https://github.com/pbzona/llmd.git
-cd llmd
+# Install llmd
+npm install -g llmd
 
-# Install dependencies
-bun install
-
-# Serve the docs (with live reload and analytics enabled)
-LLMD_ENABLE_EVENTS=1 bun --hot index.ts ./docs --watch
+# View the documentation
+llmd docs
 ```
 
-Now click through the sidebar to explore the documentation. The analytics page will show you which docs you've viewed!
+That's it! The docs will open in your browser. Click through the sidebar to explore.
 
 ## Features
 
@@ -59,6 +55,9 @@ Now click through the sidebar to explore the documentation. The analytics page w
 ## Basic Usage
 
 ```bash
+# View llmd documentation
+llmd docs
+
 # Serve current directory
 llmd
 

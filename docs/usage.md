@@ -3,6 +3,9 @@
 ## Basic Commands
 
 ```bash
+# View llmd documentation
+llmd docs
+
 # Serve current directory
 llmd
 
@@ -18,6 +21,26 @@ llmd ./docs --theme dark --watch
 
 # Custom port
 llmd ./docs --port 8080
+```
+
+## The `docs` Command
+
+The `llmd docs` command provides instant access to llmd's documentation:
+
+```bash
+llmd docs
+```
+
+This command:
+1. Clones the llmd repository to `~/.local/share/llmd-docs` (or `$XDG_DATA_HOME/llmd-docs`)
+2. Uses the cached clone on subsequent runs
+3. Opens the documentation in your browser automatically
+
+To get a fresh copy of the docs:
+
+```bash
+rm -rf ~/.local/share/llmd-docs
+llmd docs
 ```
 
 ## Command-Line Options
