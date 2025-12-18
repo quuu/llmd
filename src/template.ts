@@ -661,6 +661,10 @@ const FOLDER_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="
 
 const FILE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/></svg>`;
 
+const ANALYTICS_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17l-4-4-4 4-4-4"/></svg>`;
+
+const HIGHLIGHTS_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>`;
+
 // Pure function: render tree nodes recursively
 const renderTreeNodes = (nodes: TreeNode[], currentPath?: string): string =>
   nodes
@@ -684,16 +688,47 @@ const renderTreeNodes = (nodes: TreeNode[], currentPath?: string): string =>
     })
     .join("\n");
 
+// Pure function: generate special pages section
+const generateSpecialPages = (): string => `
+  <div style="padding: 12px 12px 8px 12px; margin-top: 8px; border-top: 1px solid var(--border);">
+    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; opacity: 0.5; margin-bottom: 8px; padding-left: 6px;">
+      Special Pages
+    </div>
+    <ul style="list-style: none; padding: 0; margin: 0;">
+      <li>
+        <a href="/analytics" class="depth-0" style="display: flex; align-items: center; gap: 8px; padding: 7px 8px 7px 6px; color: var(--fg); text-decoration: none; border-radius: 6px; font-size: 0.9375rem; transition: background 0.15s;">
+          ${ANALYTICS_ICON}
+          <span>Analytics</span>
+        </a>
+      </li>
+      <li>
+        <a href="/highlights" class="depth-0" style="display: flex; align-items: center; gap: 8px; padding: 7px 8px 7px 6px; color: var(--fg); text-decoration: none; border-radius: 6px; font-size: 0.9375rem; transition: background 0.15s;">
+          ${HIGHLIGHTS_ICON}
+          <span>Highlights</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+`;
+
 // Pure function: generate file tree sidebar HTML
 const generateSidebar = (files: MarkdownFile[], currentPath?: string): string => {
+  const specialPages = generateSpecialPages();
+
   if (files.length === 0) {
-    return '<div class="sidebar-nav"><p style="padding: 12px; color: #b3b3b3;">No markdown files found</p></div>';
+    return `<div class="sidebar-nav">
+      <p style="padding: 12px; color: #b3b3b3;">No markdown files found</p>
+      ${specialPages}
+    </div>`;
   }
 
   const tree = buildTree(files);
   const items = renderTreeNodes(tree, currentPath);
 
-  return `<nav class="sidebar-nav"><ul>${items}</ul></nav>`;
+  return `<nav class="sidebar-nav">
+    <ul>${items}</ul>
+    ${specialPages}
+  </nav>`;
 };
 
 // Options for base layout
