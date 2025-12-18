@@ -105,7 +105,6 @@ const initializeDatabase = (db: any): void => {
 };
 
 // Side effect: recursively scan directory and create resources
-// biome-ignore lint/suspicious/noExplicitAny: Runtime compatibility layer
 const scanAndCreateResources = async (
   db: any,
   rootDir: string,
@@ -219,7 +218,7 @@ const checkDatabaseSize = (dbPath: string): void => {
       console.warn(`[events] Database size is ${sizeMB}MB (threshold: ${MAX_DB_SIZE_MB}MB)`);
       console.warn(`[events] Consider deleting old data: rm ${dbPath}`);
     }
-  } catch (err) {
+  } catch (_err) {
     // File doesn't exist yet or can't be read - not a problem
   }
 };

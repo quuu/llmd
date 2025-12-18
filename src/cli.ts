@@ -78,11 +78,14 @@ export const parseArgs = (args: string[]): ParsedArgs => {
         flags.analyticsSubcommand = "view";
       }
     } else if (arg === "--port") {
-      flags.port = Number.parseInt(args[++i] ?? "0", 10);
+      i += 1;
+      flags.port = Number.parseInt(args[i] ?? "0", 10);
     } else if (arg === "--theme") {
-      flags.theme = args[++i];
+      i += 1;
+      flags.theme = args[i];
     } else if (arg === "--fonts") {
-      flags.fontTheme = args[++i];
+      i += 1;
+      flags.fontTheme = args[i];
     } else if (arg === "--open") {
       flags.open = true;
     } else if (arg === "--no-open") {
