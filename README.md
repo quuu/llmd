@@ -25,6 +25,7 @@ That's it! The docs will open in your browser. Click through the sidebar to expl
 - **Live reload** - Watch mode reloads on file changes
 - **Copy buttons** - One-click code copying
 - **Table of contents** - Auto-generated from headings
+- **Highlights** - Extract and save important passages from your docs
 - **Usage Analytics** - Track which docs you view most (local-only, opt-in)
 
 ## Documentation
@@ -33,6 +34,7 @@ That's it! The docs will open in your browser. Click through the sidebar to expl
 - [Usage](./docs/usage.md) - Command-line options and examples
 - [Themes](./docs/themes.md) - Built-in and custom color themes
 - [Fonts](./docs/fonts.md) - Built-in and custom font combinations
+- [Highlights](./docs/highlights.md) - Extract and save important passages
 - [Analytics](./docs/analytics.md) - Local usage tracking
 
 ## Basic Usage
