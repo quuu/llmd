@@ -115,7 +115,7 @@ const resolvePath = (inputPath: string): { directory: string; initialFile?: stri
   return { directory: absolutePath };
 };
 
-// Pure function: create config from parsed args with defaults
+// Side effect: create config from parsed args with defaults (loads saved preferences from database)
 export const createConfig = (parsed: ParsedArgs): Config => {
   const { path = ".", flags } = parsed;
   const { directory, initialFile } = resolvePath(path);

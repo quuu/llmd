@@ -158,7 +158,7 @@ const parseJsonBody = (req: import("node:http").IncomingMessage): Promise<unknow
     req.on("error", reject);
   });
 
-// Pure function: create request handler
+// Pure function: create request handler (returns handler with side effects)
 const createHandler = (
   config: Config,
   files: MarkdownFile[],

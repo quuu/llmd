@@ -204,7 +204,7 @@ const scanAndCreateResources = async (
   transaction(files);
 };
 
-// Pure function: check database file size and warn if large
+// Side effect: check database file size and warn if large
 const checkDatabaseSize = (dbPath: string): void => {
   // TODO: Make this threshold configurable via environment variable or config file
   const MAX_DB_SIZE_MB = 50;
@@ -224,7 +224,7 @@ const checkDatabaseSize = (dbPath: string): void => {
   }
 };
 
-// Pure function: get config value from database
+// Side effect: get config value from database
 // biome-ignore lint/suspicious/noExplicitAny: Runtime compatibility layer
 const getConfigValue = (db: any, key: string): string | null => {
   try {
@@ -243,7 +243,7 @@ const setConfigValue = (db: any, key: string, value: string): void => {
   stmt.run(key, value);
 };
 
-// Pure function: check if analytics is enabled
+// Side effect: check if analytics is enabled
 // Priority: 1) Environment variable, 2) Database config
 // biome-ignore lint/suspicious/noExplicitAny: Runtime compatibility layer
 const isAnalyticsEnabled = (db: any): boolean => {
@@ -257,7 +257,7 @@ const isAnalyticsEnabled = (db: any): boolean => {
   return configValue === "true";
 };
 
-// Public function: initialize event service
+// Side effect: initialize event service (creates database, starts scanning)
 export const initEventService = (config: Config, dbPath?: string): EventService | null => {
   const actualDbPath = dbPath || resolveDatabasePath();
 
@@ -493,7 +493,7 @@ export const initEventService = (config: Config, dbPath?: string): EventService 
   };
 };
 
-// Public function: enable analytics (sets database config)
+// Side effect: enable analytics (sets database config)
 export const enableAnalytics = (): void => {
   const dbPath = resolveDatabasePath();
   const db = createDatabase(dbPath);
@@ -510,7 +510,7 @@ export const enableAnalytics = (): void => {
   console.log(`[events] Database: ${dbPath}`);
 };
 
-// Public function: disable analytics (sets database config)
+// Side effect: disable analytics (sets database config)
 export const disableAnalytics = (): void => {
   const dbPath = resolveDatabasePath();
   const db = createDatabase(dbPath);
@@ -526,7 +526,7 @@ export const disableAnalytics = (): void => {
   console.log("[events] Analytics disabled");
 };
 
-// Public function: check analytics status
+// Side effect: check analytics status (reads env and database)
 export const getAnalyticsStatus = (): {
   enabled: boolean;
   source: "environment" | "database" | "disabled";
@@ -554,7 +554,7 @@ export const getAnalyticsStatus = (): {
   return { enabled: false, source: "disabled" };
 };
 
-// Public function: save theme preferences
+// Side effect: save theme preferences to database
 export const saveThemePreferences = (theme: string, fontTheme: string): void => {
   try {
     const dbPath = resolveDatabasePath();
@@ -571,7 +571,7 @@ export const saveThemePreferences = (theme: string, fontTheme: string): void => 
   }
 };
 
-// Public function: load theme preferences
+// Side effect: load theme preferences from database
 export const loadThemePreferences = (): { theme?: string; fontTheme?: string } => {
   try {
     const dbPath = resolveDatabasePath();
