@@ -72,15 +72,14 @@ const MD_EXTENSION = /\.md$/;
 // - "preview-1.md" → no extraction (CLI flags apply to all files)
 //
 // See scripts/generate-preview.ts for the preview generation workflow.
-const extractPreviewConfig = (filename: string): { theme?: string; font?: string } | null => {
-  // Remove .md extension
+const extractPreviewConfig = (filename: string): { theme?: string } | null => {
+  // Remove .md extension and check if it's a theme name
   const nameWithoutExt = filename.replace(MD_EXTENSION, "");
 
-  // Check if it matches theme-font pattern
-  const parts = nameWithoutExt.split("-");
-  if (parts.length === 2) {
-    const [theme, font] = parts;
-    return { theme, font };
+  // If filename is just a single word (no hyphens or slashes), treat it as a theme name
+  // This allows for files like "nord.md" or "dracula.md" to preview themes
+  if (nameWithoutExt && !nameWithoutExt.includes("-") && !nameWithoutExt.includes("/")) {
+    return { theme: nameWithoutExt };
   }
 
   return null;
