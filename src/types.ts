@@ -8,8 +8,7 @@ export type Config = {
   // Server options
   port: number;
   // UI options
-  theme: string; // Theme name (built-in or custom)
-  fontTheme: string; // Font name (built-in or custom)
+  theme: string; // Theme name (built-in or custom) - includes colors + fonts
   // Behavior flags
   open: boolean;
   watch: boolean;
@@ -30,7 +29,6 @@ export type ParsedArgs = {
   flags: {
     port?: number;
     theme?: string;
-    fontTheme?: string;
     open?: boolean;
     watch?: boolean;
     help?: boolean;

@@ -1,71 +1,91 @@
 {
-  "_comment": "Unified configuration for llmd themes and fonts",
+  "_comment": "Unified configuration for llmd themes (colors + fonts together)",
   "_location": "Copy to ~/.config/llmd/themes.json or $XDG_CONFIG_HOME/llmd/themes.json",
 
-  "colorThemes": {
+  "themes": {
     "cyberpunk": {
-      "bg": "#0a0e27",
-      "fg": "#00ff9f",
-      "border": "#1a1f3a",
-      "hover": "#1a1f3a",
-      "accent": "#ff00aa",
-      "codeBg": "#0f1729",
-      "sidebarBg": "#050811",
-      "folderIcon": "#00d4ff",
-      "fileIcon": "#ff00aa",
-      "highlightBg": "#ff00aa",
-      "highlightStaleBg": "#8800aa"
+      "colors": {
+        "bg": "#0a0e27",
+        "fg": "#00ff9f",
+        "border": "#1a1f3a",
+        "hover": "#1a1f3a",
+        "accent": "#ff00aa",
+        "codeBg": "#0f1729",
+        "sidebarBg": "#050811",
+        "folderIcon": "#00d4ff",
+        "fileIcon": "#ff00aa",
+        "highlightBg": "#ff00aa",
+        "highlightStaleBg": "#8800aa"
+      },
+      "fonts": {
+        "heading": "JetBrains Mono, monospace",
+        "body": "Inter, sans-serif",
+        "code": "JetBrains Mono, monospace",
+        "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap"
+      }
     },
     "forest": {
-      "bg": "#1a2f1a",
-      "fg": "#d4e7d4",
-      "border": "#2d4a2d",
-      "hover": "#2d4a2d",
-      "accent": "#7fb069",
-      "codeBg": "#243824",
-      "sidebarBg": "#152015",
-      "folderIcon": "#b7ce63",
-      "fileIcon": "#f9a03f",
-      "highlightBg": "#7fb069",
-      "highlightStaleBg": "#5a8050"
+      "colors": {
+        "bg": "#1a2f1a",
+        "fg": "#d4e7d4",
+        "border": "#2d4a2d",
+        "hover": "#2d4a2d",
+        "accent": "#7fb069",
+        "codeBg": "#243824",
+        "sidebarBg": "#152015",
+        "folderIcon": "#b7ce63",
+        "fileIcon": "#f9a03f",
+        "highlightBg": "#7fb069",
+        "highlightStaleBg": "#5a8050"
+      },
+      "fonts": {
+        "heading": "Montserrat, sans-serif",
+        "body": "Open Sans, sans-serif",
+        "code": "Source Code Pro, monospace",
+        "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Source+Code+Pro:wght@400;700&display=swap"
+      }
     },
     "ocean": {
-      "bg": "#0c1e2e",
-      "fg": "#c9e6f5",
-      "border": "#1a3a52",
-      "hover": "#1a3a52",
-      "accent": "#4fc3f7",
-      "codeBg": "#163447",
-      "sidebarBg": "#071420",
-      "folderIcon": "#81d4fa",
-      "fileIcon": "#ffb74d",
-      "highlightBg": "#4fc3f7",
-      "highlightStaleBg": "#2980b9"
-    }
-  },
-
-  "fontThemes": {
-    "techie": {
-      "heading": "JetBrains Mono, monospace",
-      "body": "Inter, sans-serif",
-      "code": "JetBrains Mono, monospace"
+      "colors": {
+        "bg": "#0c1e2e",
+        "fg": "#c9e6f5",
+        "border": "#1a3a52",
+        "hover": "#1a3a52",
+        "accent": "#4fc3f7",
+        "codeBg": "#163447",
+        "sidebarBg": "#071420",
+        "folderIcon": "#81d4fa",
+        "fileIcon": "#ffb74d",
+        "highlightBg": "#4fc3f7",
+        "highlightStaleBg": "#2980b9"
+      },
+      "fonts": {
+        "heading": "Playfair Display, serif",
+        "body": "Lora, serif",
+        "code": "Fira Code, monospace",
+        "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&family=Fira+Code:wght@400;700&display=swap"
+      }
     },
     "minimal": {
-      "heading": "Work Sans, sans-serif",
-      "body": "Work Sans, sans-serif",
-      "code": "IBM Plex Mono, monospace"
-    },
-    "elegant": {
-      "heading": "Montserrat, sans-serif",
-      "body": "Open Sans, sans-serif",
-      "code": "Source Code Pro, monospace"
-    },
-    "with-custom-url": {
-      "_note": "Use googleFontsUrl only if you need custom weights (300, 500, 600) or styles",
-      "heading": "Poppins, sans-serif",
-      "body": "Inter, sans-serif",
-      "code": "Fira Code, monospace",
-      "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&family=Fira+Code:wght@400;500&display=swap"
+      "_note": "Example with system fonts only (no googleFontsUrl needed)",
+      "colors": {
+        "bg": "#ffffff",
+        "fg": "#000000",
+        "border": "#e0e0e0",
+        "hover": "#f5f5f5",
+        "accent": "#000000",
+        "codeBg": "#f5f5f5",
+        "sidebarBg": "#fafafa",
+        "folderIcon": "#666666",
+        "fileIcon": "#999999",
+        "highlightBg": "#ffeb3b",
+        "highlightStaleBg": "#ffcdd2"
+      },
+      "fonts": {
+        "heading": "-apple-system, BlinkMacSystemFont, sans-serif",
+        "body": "-apple-system, BlinkMacSystemFont, sans-serif",
+        "code": "SF Mono, Monaco, Consolas, monospace"
+      }
     }
   }
 }
