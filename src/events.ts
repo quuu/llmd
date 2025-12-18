@@ -561,6 +561,10 @@ export const initEventService = (config: Config, dbPath?: string): EventService 
     db.close();
   };
 
+  // Public API: get database handle (for highlights and other extensions)
+  // biome-ignore lint/suspicious/noExplicitAny: Runtime compatibility layer
+  const getDatabase = (): any => db;
+
   return {
     recordEvent,
     getAnalytics,
@@ -568,6 +572,7 @@ export const initEventService = (config: Config, dbPath?: string): EventService 
     getDatabaseStats: getDatabaseStatsService,
     cleanupOldEvents: cleanupOldEventsService,
     clearDatabase: clearDatabaseService,
+    getDatabase,
     close,
   };
 };

@@ -8,6 +8,13 @@ import { WebSocketServer } from "ws";
 import { getClientScriptTag } from "./client-assets";
 import { initEventService } from "./events";
 import { processMarkdown } from "./markdown";
+import {
+  handleCreateHighlight,
+  handleDeleteHighlight,
+  handleGetDirectoryHighlights,
+  handleGetResourceHighlights,
+  handleRestoreFile,
+} from "./routes/highlights";
 import { generateErrorPage, generateIndexPage, generateMarkdownPage } from "./template";
 import type { Config, EventService, MarkdownFile } from "./types";
 import { unwatchFile, watchFile } from "./watcher";
@@ -265,6 +272,83 @@ const createHandler = (
         );
         return;
       }
+    }
+
+    // Route: POST /api/highlights - Create highlight
+    if (pathname === "/api/highlights" && req.method === "POST") {
+      if (!eventService) {
+        sendResponse(res, 501, { "Content-Type": "text/plain" }, "Events disabled");
+        return;
+      }
+
+      const db = eventService.getDatabase();
+      await handleCreateHighlight(req, res, { config, db });
+      return;
+    }
+
+    // Route: GET /api/highlights/resource - Get highlights for a resource
+    if (pathname === "/api/highlights/resource" && req.method === "GET") {
+      if (!eventService) {
+        sendResponse(res, 501, { "Content-Type": "text/plain" }, "Events disabled");
+        return;
+      }
+
+      const db = eventService.getDatabase();
+      handleGetResourceHighlights(res, { config, db }, url);
+      return;
+    }
+
+    // Route: GET /api/highlights/directory - Get highlights for a directory
+    if (pathname === "/api/highlights/directory" && req.method === "GET") {
+      if (!eventService) {
+        sendResponse(res, 501, { "Content-Type": "text/plain" }, "Events disabled");
+        return;
+      }
+
+      const db = eventService.getDatabase();
+      handleGetDirectoryHighlights(res, { config, db }, url);
+      return;
+    }
+
+    // Route: DELETE /api/highlights/:id - Delete a highlight
+    if (pathname.startsWith("/api/highlights/") && req.method === "DELETE") {
+      if (!eventService) {
+        sendResponse(res, 501, { "Content-Type": "text/plain" }, "Events disabled");
+        return;
+      }
+
+      const highlightId = pathname.slice(17); // Remove "/api/highlights/"
+      if (!highlightId || highlightId.includes("/")) {
+        sendResponse(res, 400, { "Content-Type": "text/plain" }, "Invalid highlight ID");
+        return;
+      }
+
+      const db = eventService.getDatabase();
+      handleDeleteHighlight(res, { config, db }, highlightId);
+      return;
+    }
+
+    // Route: POST /api/highlights/:id/restore - Restore file from backup
+    if (
+      pathname.startsWith("/api/highlights/") &&
+      pathname.endsWith("/restore") &&
+      req.method === "POST"
+    ) {
+      if (!eventService) {
+        sendResponse(res, 501, { "Content-Type": "text/plain" }, "Events disabled");
+        return;
+      }
+
+      const parts = pathname.slice(17).split("/"); // Remove "/api/highlights/" and split
+      const highlightId = parts[0];
+      if (!highlightId || parts.length !== 2) {
+        sendResponse(res, 400, { "Content-Type": "text/plain" }, "Invalid highlight ID");
+        return;
+      }
+
+      const db = eventService.getDatabase();
+      await handleRestoreFile(req, res, { config, db }, highlightId);
+      return;
     }
 
     // Route: Favicon

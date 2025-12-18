@@ -110,5 +110,7 @@ export type EventService = {
   getDatabaseStats: () => Promise<DatabaseStats>;
   cleanupOldEvents: (days: number) => Promise<{ deletedEvents: number; deletedResources: number }>;
   clearDatabase: () => Promise<void>;
+  // biome-ignore lint/suspicious/noExplicitAny: Runtime compatibility layer for database access
+  getDatabase: () => any;
   close: () => void;
 };
