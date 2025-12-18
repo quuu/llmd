@@ -571,6 +571,16 @@ const getStyles = (themeName: string, fontTheme: string): string => {
       transform: translateY(1px);
     }
     
+    /* Highlight flash animation for scroll-to */
+    @keyframes highlight-flash {
+      0% { background: var(--accent); }
+      100% { background: ${isDark ? "rgba(255, 220, 0, 0.25)" : "rgba(255, 235, 59, 0.35)"}; }
+    }
+    
+    .highlight-flash {
+      animation: highlight-flash 1s ease-out;
+    }
+    
     @media (max-width: 768px) {
       body { flex-direction: column; }
       .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
