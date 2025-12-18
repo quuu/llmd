@@ -28,13 +28,6 @@ export const initHighlights = (): void => {
   // Listen for text selection
   document.addEventListener("mouseup", handleTextSelection);
   document.addEventListener("touchend", handleTextSelection);
-
-  // Close popup when clicking outside
-  document.addEventListener("click", (e) => {
-    if (popup && !popup.contains(e.target as Node)) {
-      hidePopup();
-    }
-  });
 };
 
 // Fetch highlights for current page
@@ -61,6 +54,12 @@ const fetchHighlights = async (): Promise<void> => {
 
 // Handle text selection
 const handleTextSelection = (e: Event): void => {
+  // Ignore events inside the popup
+  const target = e.target as Node;
+  if (popup && popup.contains(target)) {
+    return;
+  }
+
   const selection = window.getSelection();
   if (!selection || selection.isCollapsed) {
     hidePopup();
@@ -127,6 +126,10 @@ const createPopup = (): HTMLElement => {
   const div = document.createElement("div");
   div.className = "highlight-popup";
   div.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <span style="font-size: 13px; font-weight: 500; color: var(--fg);">Add Highlight</span>
+      <button class="highlight-close-btn" type="button" style="background: none; border: none; color: var(--fg); cursor: pointer; padding: 0; font-size: 18px; line-height: 1; opacity: 0.7;">&times;</button>
+    </div>
     <textarea 
       class="highlight-notes-input" 
       placeholder="Add a note (optional)"
@@ -138,12 +141,21 @@ const createPopup = (): HTMLElement => {
     </button>
   `;
 
-  // Add click handler
+  // Add click handler for create button
   const btn = div.querySelector(".highlight-create-btn");
   if (btn) {
     btn.addEventListener("click", async (e) => {
       e.stopPropagation();
       await createHighlight();
+    });
+  }
+
+  // Add click handler for close button
+  const closeBtn = div.querySelector(".highlight-close-btn");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      hidePopup();
     });
   }
 
