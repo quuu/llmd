@@ -196,6 +196,26 @@ const scanAndCreateResources = async (
   transaction(files);
 };
 
+// Pure function: check database file size and warn if large
+const checkDatabaseSize = (dbPath: string): void => {
+  // TODO: Make this threshold configurable via environment variable or config file
+  const MAX_DB_SIZE_MB = 50;
+  const MAX_DB_SIZE_BYTES = MAX_DB_SIZE_MB * 1024 * 1024;
+
+  try {
+    const { statSync } = require("node:fs");
+    const stats = statSync(dbPath);
+    const sizeMB = (stats.size / 1024 / 1024).toFixed(2);
+
+    if (stats.size > MAX_DB_SIZE_BYTES) {
+      console.warn(`[events] Database size is ${sizeMB}MB (threshold: ${MAX_DB_SIZE_MB}MB)`);
+      console.warn(`[events] Consider deleting old data: rm ${dbPath}`);
+    }
+  } catch (err) {
+    // File doesn't exist yet or can't be read - not a problem
+  }
+};
+
 // Public function: initialize event service
 export const initEventService = (config: Config, dbPath?: string): EventService | null => {
   // Check if events are enabled (opt-in)
@@ -204,6 +224,10 @@ export const initEventService = (config: Config, dbPath?: string): EventService 
   }
 
   const actualDbPath = dbPath || resolveDatabasePath();
+
+  // Check database size and warn if large
+  checkDatabaseSize(actualDbPath);
+
   const db = createDatabase(actualDbPath);
 
   // Initialize schema
