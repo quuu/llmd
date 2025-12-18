@@ -15,6 +15,7 @@ type Highlight = {
 let highlights: Highlight[] = [];
 let popup: HTMLElement | null = null;
 let currentSelection: { text: string; range: Range } | null = null;
+let openNotesPopups: Map<string, HTMLElement> = new Map(); // Track open notes popups by highlight ID
 
 // Initialize highlights on page load
 export const initHighlights = (): void => {
@@ -124,6 +125,14 @@ const hidePopup = (): void => {
 
 // Show notes popup when clicking on an existing highlight
 const showNotesPopup = (highlight: Highlight, e: MouseEvent): void => {
+  // If popup already exists for this highlight, close it instead
+  const existingPopup = openNotesPopups.get(highlight.id);
+  if (existingPopup) {
+    existingPopup.remove();
+    openNotesPopups.delete(highlight.id);
+    return;
+  }
+
   // Create a small popup to display notes
   const notesPopup = document.createElement("div");
   notesPopup.className = "highlight-notes-popup";
@@ -155,6 +164,7 @@ const showNotesPopup = (highlight: Highlight, e: MouseEvent): void => {
   closeBtn.addEventListener("click", (clickEvent) => {
     clickEvent.stopPropagation();
     notesPopup.remove();
+    openNotesPopups.delete(highlight.id);
   });
 
   header.appendChild(title);
@@ -178,10 +188,14 @@ const showNotesPopup = (highlight: Highlight, e: MouseEvent): void => {
 
   document.body.appendChild(notesPopup);
 
+  // Track this popup
+  openNotesPopups.set(highlight.id, notesPopup);
+
   // Close when clicking outside - use a unique handler per popup
   const closeOnClickOutside = (clickEvent: MouseEvent) => {
     if (!notesPopup.contains(clickEvent.target as Node)) {
       notesPopup.remove();
+      openNotesPopups.delete(highlight.id);
       document.removeEventListener("click", closeOnClickOutside);
     }
   };
