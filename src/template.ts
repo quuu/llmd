@@ -546,8 +546,9 @@ const getStyles = (themeName: string, fontTheme: string): string => {
       border: 1px solid var(--border);
       border-radius: 6px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      padding: 8px;
+      padding: 12px;
       display: none;
+      min-width: 300px;
     }
     
     .highlight-create-btn {

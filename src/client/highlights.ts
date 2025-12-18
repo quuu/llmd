@@ -122,11 +122,17 @@ const hidePopup = (): void => {
   currentSelection = null;
 };
 
-// Create popup element
+// Create popup element with notes textarea
 const createPopup = (): HTMLElement => {
   const div = document.createElement("div");
   div.className = "highlight-popup";
   div.innerHTML = `
+    <textarea 
+      class="highlight-notes-input" 
+      placeholder="Add a note (optional)"
+      rows="2"
+      style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--fg); font-size: 13px; resize: vertical; margin-bottom: 8px; font-family: inherit;"
+    ></textarea>
     <button class="highlight-create-btn" type="button">
       Create Highlight
     </button>
@@ -167,6 +173,10 @@ const createHighlight = async (): Promise<void> => {
     const startOffset = preRange.toString().length;
     const endOffset = startOffset + currentSelection.text.length;
 
+    // Get notes from textarea
+    const notesInput = popup?.querySelector(".highlight-notes-input") as HTMLTextAreaElement;
+    const notes = notesInput?.value.trim() || undefined;
+
     // Send to API
     const currentPath = window.location.pathname.replace("/view/", "");
     const response = await fetch("/api/highlights", {
@@ -177,6 +187,7 @@ const createHighlight = async (): Promise<void> => {
         startOffset,
         endOffset,
         highlightedText: currentSelection.text,
+        notes,
       }),
     });
 
@@ -198,6 +209,11 @@ const createHighlight = async (): Promise<void> => {
 
     // Re-render highlights
     renderHighlights();
+
+    // Clear textarea
+    if (notesInput) {
+      notesInput.value = "";
+    }
 
     // Hide popup and clear selection
     hidePopup();
