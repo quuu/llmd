@@ -32,6 +32,49 @@ describe("parseArgs", () => {
     const result = parseArgs(["--version"]);
     expect(result.flags.version).toBe(true);
   });
+
+  test("parses analytics subcommands", () => {
+    const enableResult = parseArgs(["analytics", "enable"]);
+    expect(enableResult.flags.analytics).toBe(true);
+    expect(enableResult.flags.analyticsSubcommand).toBe("enable");
+
+    const disableResult = parseArgs(["analytics", "disable"]);
+    expect(disableResult.flags.analytics).toBe(true);
+    expect(disableResult.flags.analyticsSubcommand).toBe("disable");
+
+    const viewResult = parseArgs(["analytics", "view"]);
+    expect(viewResult.flags.analytics).toBe(true);
+    expect(viewResult.flags.analyticsSubcommand).toBe("view");
+  });
+
+  test("parses db subcommands", () => {
+    const checkResult = parseArgs(["db", "check"]);
+    expect(checkResult.flags.db).toBe(true);
+    expect(checkResult.flags.dbSubcommand).toBe("check");
+
+    const cleanupResult = parseArgs(["db", "cleanup"]);
+    expect(cleanupResult.flags.db).toBe(true);
+    expect(cleanupResult.flags.dbSubcommand).toBe("cleanup");
+
+    const clearResult = parseArgs(["db", "clear"]);
+    expect(clearResult.flags.db).toBe(true);
+    expect(clearResult.flags.dbSubcommand).toBe("clear");
+  });
+
+  test("parses --days flag for db cleanup", () => {
+    const result = parseArgs(["db", "cleanup", "--days", "7"]);
+    expect(result.flags.days).toBe(7);
+  });
+
+  test("uses default 30 days when --days not provided", () => {
+    const result = parseArgs(["db", "cleanup"]);
+    expect(result.flags.days).toBeUndefined();
+  });
+
+  test("handles invalid --days value", () => {
+    const result = parseArgs(["db", "cleanup", "--days", "invalid"]);
+    expect(result.flags.days).toBe(30); // Should default to 30
+  });
 });
 
 describe("createConfig", () => {

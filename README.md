@@ -52,6 +52,11 @@ llmd ./docs --theme dark --watch
 
 # Open directly to analytics
 llmd analytics
+
+# Manage analytics database
+llmd db check                 # View database stats
+llmd db cleanup --days 30     # Delete old events
+llmd db clear                 # Clear all analytics data
 ```
 
 See [Usage](./docs/usage.md) for all options.

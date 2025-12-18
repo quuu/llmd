@@ -57,6 +57,23 @@ llmd analytics disable
 
 This updates the database configuration. No events will be tracked until you re-enable analytics.
 
+### Database Management
+
+Manage your analytics database:
+
+```bash
+# View database statistics
+llmd db check
+
+# Delete events older than 30 days
+llmd db cleanup --days 30
+
+# Clear all analytics data
+llmd db clear
+```
+
+See the [Database Management](#database-management-1) section below for details.
+
 ## Configuration Priority
 
 llmd checks for analytics enablement in this order:
@@ -116,21 +133,99 @@ export LLMD_ENABLE_EVENTS=enabled
 
 ## Database Management
 
+llmd provides commands to help you manage your analytics database.
+
+### Check Database Stats
+
+View database size and usage statistics:
+
+```bash
+llmd db check
+```
+
+**Output example:**
+```
+Database Statistics:
+  Location: /Users/you/.local/share/llmd/llmd.db
+  Size: 2.45 MB (2,568,192 bytes)
+  Resources: 543
+  Events: 1,234
+  Oldest event: 1/15/2024, 3:45:00 PM
+  Newest event: 2/18/2024, 10:30:00 AM
+```
+
+This helps you understand:
+- Where your database is stored
+- How much disk space it's using
+- How many files/directories are tracked
+- How many page view events are recorded
+- The date range of your analytics data
+
+### Clean Up Old Events
+
+Delete events older than a specified number of days:
+
+```bash
+# Delete events older than 30 days (default)
+llmd db cleanup
+
+# Delete events older than 7 days
+llmd db cleanup --days 7
+
+# Delete events older than 90 days
+llmd db cleanup --days 90
+```
+
+**What it does:**
+1. Deletes all events older than the threshold
+2. Removes orphaned resources (files with no remaining events)
+3. Shows how many events and resources were deleted
+
+**Output example:**
+```
+Cleanup Results:
+  Deleted events: 456
+  Deleted resources: 123
+```
+
+**Note:** This preserves recent analytics data while freeing up disk space. Theme/font preferences are not affected.
+
+### Clear All Data
+
+Completely wipe the analytics database:
+
+```bash
+llmd db clear
+```
+
+**What it does:**
+1. Prompts for confirmation (you must type `yeah really plz delete`)
+2. Deletes all events and resources
+3. Runs VACUUM to reclaim disk space
+4. Preserves theme/font preferences
+
+**Warning:** This action cannot be undone. All analytics history will be permanently deleted.
+
 ### Size Warning
 
 llmd will warn you if the analytics database exceeds 50MB:
 
 ```
 [events] Database size is 51.00MB (threshold: 50MB)
-[events] Consider deleting old data: rm ~/.local/share/llmd/llmd.db
+[events] Consider using: llmd db cleanup
 ```
+
+When you see this warning, consider:
+- Running `llmd db cleanup` to delete old events
+- Running `llmd db clear` if you want to start fresh
+- Adjusting how frequently you clean up (e.g., cleanup every 30 days)
 
 ### Manual Cleanup
 
-To reset all analytics data, simply delete the database:
+You can also manually delete the database file:
 
 ```bash
 rm ~/.local/share/llmd/llmd.db
 ```
 
-The database will be recreated automatically the next time you run llmd with analytics enabled.
+The database will be recreated automatically the next time you run llmd with analytics enabled. However, using `llmd db clear` is preferred as it properly handles the database cleanup.

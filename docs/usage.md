@@ -16,6 +16,11 @@ llmd ./docs
 llmd analytics
 llmd analytics ~/my-project
 
+# Manage analytics database
+llmd db check                 # View database stats
+llmd db cleanup --days 30     # Delete old events
+llmd db clear                 # Clear all analytics data
+
 # Dark mode with live reload
 llmd ./docs --theme dark --watch
 
@@ -52,6 +57,7 @@ llmd docs
 | `--fonts <name>`       | Font combination: `serif`, `sans`, `mono`, `classic`, `future`, `modern`, `artsy`, `literary`, `editorial` | `sans`* |
 | `--open / --no-open`   | Auto-open browser                                                                                          | `--open`     |
 | `--watch / --no-watch` | Live reload on changes                                                                                     | `--no-watch` |
+| `--days <number>`      | Number of days for `db cleanup` command                                                                    | `30`         |
 | `-h, --help`           | Show help                                                                                                  |              |
 | `--version`            | Show version                                                                                               |              |
 
@@ -80,3 +86,52 @@ Your preferences are stored in `~/.local/share/llmd/llmd.db` and persist across 
 ```bash
 rm ~/.local/share/llmd/llmd.db
 ```
+
+## Database Management
+
+llmd stores analytics data and preferences in a local SQLite database at `~/.local/share/llmd/llmd.db` (or `$XDG_DATA_HOME/llmd/llmd.db`).
+
+### Check Database Statistics
+
+View information about your analytics database:
+
+```bash
+llmd db check
+```
+
+This shows:
+- Database file location and size
+- Total number of resources (files/directories) tracked
+- Total number of events (page views)
+- Oldest and newest event timestamps
+
+### Clean Up Old Data
+
+Delete events older than a specified number of days:
+
+```bash
+llmd db cleanup --days 30    # Delete events older than 30 days
+llmd db cleanup --days 7     # Delete events older than 7 days
+llmd db cleanup              # Uses default: 30 days
+```
+
+This command:
+1. Deletes all events older than the specified threshold
+2. Removes orphaned resources (files with no remaining events)
+3. Shows count of deleted events and resources
+
+### Clear All Data
+
+Completely wipe the analytics database:
+
+```bash
+llmd db clear
+```
+
+This command:
+1. Prompts for confirmation (requires typing "yeah really plz delete")
+2. Deletes all events and resources
+3. Runs VACUUM to reclaim disk space
+4. Preserves theme/font preferences
+
+**Warning**: This action cannot be undone.

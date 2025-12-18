@@ -259,7 +259,7 @@ const isAnalyticsEnabled = (db: any): boolean => {
 
 // Side effect: initialize event service (creates database, starts scanning)
 export const initEventService = (config: Config, dbPath?: string): EventService | null => {
-  const actualDbPath = dbPath || resolveDatabasePath();
+  const actualDbPath = dbPath ?? resolveDatabasePath();
 
   // Check database size and warn if large
   checkDatabaseSize(actualDbPath);
@@ -481,23 +481,75 @@ export const initEventService = (config: Config, dbPath?: string): EventService 
   };
 
   // Public API: get database statistics
-  // biome-ignore lint: Explicit async function for clarity
   const getDatabaseStatsService = async (): Promise<import("./types").DatabaseStats> => {
-    return await getDatabaseStats();
+    // Get file size (skip for in-memory databases)
+    let fileSizeBytes = 0;
+    let fileSizeMB = "0.00";
+
+    if (actualDbPath !== ":memory:") {
+      const { statSync } = await import("node:fs");
+      const stats = statSync(actualDbPath);
+      fileSizeBytes = stats.size;
+      fileSizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(2);
+    }
+
+    // Get total resources
+    const totalResourcesStmt = db.prepare("SELECT COUNT(*) as count FROM resources");
+    const totalResources = (totalResourcesStmt.get() as { count: number }).count;
+
+    // Get total events
+    const totalEventsStmt = db.prepare("SELECT COUNT(*) as count FROM events");
+    const totalEvents = (totalEventsStmt.get() as { count: number }).count;
+
+    // Get oldest and newest event timestamps
+    const oldestStmt = db.prepare("SELECT MIN(timestamp) as oldest FROM events");
+    const newestStmt = db.prepare("SELECT MAX(timestamp) as newest FROM events");
+    const oldestResult = oldestStmt.get() as { oldest: number | null };
+    const newestResult = newestStmt.get() as { newest: number | null };
+
+    return {
+      fileSizeBytes,
+      fileSizeMB,
+      totalResources,
+      totalEvents,
+      oldestEventTimestamp: oldestResult.oldest,
+      newestEventTimestamp: newestResult.newest,
+      databasePath: actualDbPath,
+    };
   };
 
   // Public API: cleanup old events
-  // biome-ignore lint: Returns promise from synchronous function
+  // biome-ignore lint/suspicious/useAwait: Wrapped for consistent async API
   const cleanupOldEventsService = async (
     days: number
   ): Promise<{ deletedEvents: number; deletedResources: number }> => {
-    return cleanupOldEvents(days);
+    const cutoffTime = Date.now() - days * 24 * 60 * 60 * 1000;
+
+    // Delete old events
+    const deleteEventsStmt = db.prepare("DELETE FROM events WHERE timestamp < ?");
+    const eventsResult = deleteEventsStmt.run(cutoffTime);
+    const deletedEvents = eventsResult.changes || 0;
+
+    // Delete resources that have no events (orphaned resources)
+    const deleteResourcesStmt = db.prepare(`
+      DELETE FROM resources 
+      WHERE id NOT IN (SELECT DISTINCT resource_id FROM events)
+    `);
+    const resourcesResult = deleteResourcesStmt.run();
+    const deletedResources = resourcesResult.changes || 0;
+
+    return { deletedEvents, deletedResources };
   };
 
   // Public API: clear database
-  // biome-ignore lint: Void function wrapped in async
+  // biome-ignore lint/suspicious/useAwait: Wrapped for consistent async API
   const clearDatabaseService = async (): Promise<void> => {
-    clearDatabase();
+    // Delete all events first (due to foreign key constraints)
+    db.exec("DELETE FROM events");
+    // Delete all resources
+    db.exec("DELETE FROM resources");
+    // Vacuum to reclaim space
+    db.exec("VACUUM");
   };
 
   // Public API: close database

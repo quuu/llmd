@@ -1,6 +1,6 @@
 {
   "name": "llmd",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Local markdown server for LLM-generated docs",
   "author": "Phil Zona <phil.b.zona@gmail.com>",
   "license": "MIT",

@@ -261,4 +261,94 @@ describe("Event Service", () => {
     rmSync(emptyDir, { recursive: true, force: true });
     cleanupTestDirectory();
   });
+
+  test("should get database statistics", async () => {
+    process.env.LLMD_ENABLE_EVENTS = "1";
+    setupTestDirectory();
+
+    const config = createTestConfig(TEST_DIR);
+    const service = initEventService(config, ":memory:");
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Record some events
+    service!.recordEvent("view", join(TEST_DIR, "README.md"), "file");
+    service!.recordEvent("view", join(TEST_DIR, "docs", "guide.md"), "file");
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const stats = await service!.getDatabaseStats();
+
+    expect(stats.totalResources).toBeGreaterThan(0);
+    expect(stats.totalEvents).toBe(2);
+    expect(stats.fileSizeBytes).toBe(0); // In-memory database has no file size
+    expect(stats.fileSizeMB).toBe("0.00");
+    expect(stats.databasePath).toBe(":memory:");
+    expect(stats.oldestEventTimestamp).toBeTypeOf("number");
+    expect(stats.newestEventTimestamp).toBeTypeOf("number");
+
+    service!.close();
+    cleanupTestDirectory();
+  });
+
+  test("should cleanup old events", async () => {
+    process.env.LLMD_ENABLE_EVENTS = "1";
+    setupTestDirectory();
+
+    const config = createTestConfig(TEST_DIR);
+    const service = initEventService(config, ":memory:");
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Record some events
+    service!.recordEvent("view", join(TEST_DIR, "README.md"), "file");
+    service!.recordEvent("view", join(TEST_DIR, "docs", "guide.md"), "file");
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const statsBefore = await service!.getDatabaseStats();
+    expect(statsBefore.totalEvents).toBe(2);
+
+    // Clean up events older than 0 days (should delete all)
+    const result = await service!.cleanupOldEvents(0);
+
+    expect(result.deletedEvents).toBe(2);
+    expect(result.deletedResources).toBeGreaterThan(0); // Orphaned resources should be deleted
+
+    const statsAfter = await service!.getDatabaseStats();
+    expect(statsAfter.totalEvents).toBe(0);
+
+    service!.close();
+    cleanupTestDirectory();
+  });
+
+  test("should clear database", async () => {
+    process.env.LLMD_ENABLE_EVENTS = "1";
+    setupTestDirectory();
+
+    const config = createTestConfig(TEST_DIR);
+    const service = initEventService(config, ":memory:");
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Record some events
+    service!.recordEvent("view", join(TEST_DIR, "README.md"), "file");
+    service!.recordEvent("view", join(TEST_DIR, "docs", "guide.md"), "file");
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const statsBefore = await service!.getDatabaseStats();
+    expect(statsBefore.totalEvents).toBe(2);
+    expect(statsBefore.totalResources).toBeGreaterThan(0);
+
+    // Clear database
+    await service!.clearDatabase();
+
+    const statsAfter = await service!.getDatabaseStats();
+    expect(statsAfter.totalEvents).toBe(0);
+    expect(statsAfter.totalResources).toBe(0);
+
+    service!.close();
+    cleanupTestDirectory();
+  });
 });
