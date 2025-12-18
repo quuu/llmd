@@ -553,3 +553,42 @@ export const getAnalyticsStatus = (): {
 
   return { enabled: false, source: "disabled" };
 };
+
+// Public function: save theme preferences
+export const saveThemePreferences = (theme: string, fontTheme: string): void => {
+  try {
+    const dbPath = resolveDatabasePath();
+    const db = createDatabase(dbPath);
+    initializeDatabase(db);
+
+    setConfigValue(db, "theme", theme);
+    setConfigValue(db, "font_theme", fontTheme);
+
+    db.close();
+  } catch (err) {
+    // Silently fail - theme preferences are not critical
+    console.error("[events] Failed to save theme preferences:", err);
+  }
+};
+
+// Public function: load theme preferences
+export const loadThemePreferences = (): { theme?: string; fontTheme?: string } => {
+  try {
+    const dbPath = resolveDatabasePath();
+    const db = createDatabase(dbPath);
+    initializeDatabase(db);
+
+    const theme = getConfigValue(db, "theme");
+    const fontTheme = getConfigValue(db, "font_theme");
+
+    db.close();
+
+    return {
+      theme: theme || undefined,
+      fontTheme: fontTheme || undefined,
+    };
+  } catch {
+    // Database doesn't exist or can't be read - return empty
+    return {};
+  }
+};

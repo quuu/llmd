@@ -65,3 +65,17 @@ llmd --fonts myfont
 - Font names should include CSS fallbacks (e.g., `"Roboto, sans-serif"`)
 - System fonts (Arial, Georgia, etc.) don't load from Google Fonts
 - Invalid font names will show helpful errors listing all available fonts
+
+## Font Persistence
+
+llmd automatically remembers your last font selection. Once you use a font combination, it becomes your default for future sessions:
+
+```bash
+# First time
+llmd --fonts modern
+
+# Next time - automatically uses modern
+llmd
+```
+
+See [Usage](./usage.md#theme-persistence) for more details on theme and font persistence.

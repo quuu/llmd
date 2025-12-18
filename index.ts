@@ -4,7 +4,7 @@
 
 import { openBrowser } from "./src/browser";
 import { parseCli } from "./src/cli";
-import { disableAnalytics, enableAnalytics } from "./src/events";
+import { disableAnalytics, enableAnalytics, saveThemePreferences } from "./src/events";
 import { getRelativePath, scanMarkdownFiles } from "./src/scanner";
 import { getServerUrl, startServer } from "./src/server";
 import { printSplash } from "./src/splash";
@@ -36,6 +36,9 @@ const main = async () => {
 
     // Must be config type
     const config = result.config;
+
+    // Save theme preferences for next time
+    saveThemePreferences(config.theme, config.fontTheme);
 
     // Scan for markdown files
     console.log(`→ Scanning ${config.directory}...`);

@@ -2,6 +2,7 @@
 
 import { existsSync } from "node:fs";
 import { dirname, isAbsolute, resolve } from "node:path";
+import { loadThemePreferences } from "./events";
 import { fontExists, getAvailableFonts } from "./font-themes";
 import { getAvailableThemes, themeExists } from "./theme-config";
 import type { CliResult, Config, ParsedArgs } from "./types";
@@ -119,11 +120,14 @@ export const createConfig = (parsed: ParsedArgs): Config => {
   const { path = ".", flags } = parsed;
   const { directory, initialFile } = resolvePath(path);
 
+  // Load saved theme preferences from database
+  const savedPreferences = loadThemePreferences();
+
   return {
     directory,
     initialFile,
     port: flags.port ?? 0,
-    theme: flags.theme ?? "dark",
+    theme: flags.theme ?? savedPreferences.theme ?? "dark",
     fontTheme:
       (flags.fontTheme as
         | "serif"
@@ -134,7 +138,9 @@ export const createConfig = (parsed: ParsedArgs): Config => {
         | "modern"
         | "artsy"
         | "literary"
-        | "editorial") ?? "sans",
+        | "editorial") ??
+      savedPreferences.fontTheme ??
+      "sans",
     open: flags.open ?? true,
     watch: flags.watch ?? false,
     openToAnalytics: flags.analytics ?? false,

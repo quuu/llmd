@@ -59,3 +59,17 @@ llmd --theme mytheme --fonts myfont
 If a theme or font is not found, llmd will list all available options.
 
 **Note:** The old flat format for color themes (without `colorThemes` key) is still supported for backward compatibility.
+
+## Theme Persistence
+
+llmd automatically remembers your last theme selection. Once you use a theme, it becomes your default for future sessions:
+
+```bash
+# First time
+llmd --theme nord
+
+# Next time - automatically uses nord
+llmd
+```
+
+See [Usage](./usage.md#theme-persistence) for more details on theme persistence.

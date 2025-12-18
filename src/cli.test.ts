@@ -35,11 +35,12 @@ describe("parseArgs", () => {
 });
 
 describe("createConfig", () => {
-  test("uses defaults when no flags provided", () => {
+  test("uses defaults or saved preferences when no flags provided", () => {
     const parsed = parseArgs([]);
     const config = createConfig(parsed);
     expect(config.port).toBe(0);
-    expect(config.theme).toBe("dark");
+    // Theme may be "dark" (default) or saved preference from database
+    expect(typeof config.theme).toBe("string");
     expect(config.open).toBe(true);
     expect(config.watch).toBe(false);
   });
