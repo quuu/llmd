@@ -2,12 +2,13 @@
 
 import { existsSync } from "node:fs";
 import { dirname, isAbsolute, resolve } from "node:path";
+import pkg from "../package.json" with { type: "json" };
 import { loadThemePreferences } from "./events";
 import { fontExists, getAvailableFonts } from "./font-themes";
 import { getAvailableThemes, themeExists } from "./theme-config";
 import type { CliResult, Config, ParsedArgs } from "./types";
 
-const VERSION = "0.1.0";
+const VERSION = pkg.version;
 const HELP_TEXT = `
 llmd - Serve Markdown files as beautiful HTML
 
