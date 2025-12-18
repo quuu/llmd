@@ -223,10 +223,6 @@ const parseValueFlag = (
     flags.theme = args[index + 1];
     return index + 1;
   }
-  if (arg === "--fonts") {
-    flags.fontTheme = args[index + 1];
-    return index + 1;
-  }
   if (arg === "analytics") {
     flags.analytics = true;
     const { subcommand, nextIndex } = parseAnalyticsCommand(args, index);
@@ -331,7 +327,6 @@ export const createConfig = (parsed: ParsedArgs): Config => {
     initialFile,
     port: flags.port ?? 0,
     theme: flags.theme ?? savedPreferences.theme ?? "dark",
-    fontTheme: flags.fontTheme ?? savedPreferences.fontTheme ?? "sans",
     open: flags.open ?? true,
     watch: flags.watch ?? false,
     openToAnalytics: flags.analytics ?? false,
@@ -347,13 +342,6 @@ export const validateConfig = (config: Config): void => {
   if (!themeExists(config.theme)) {
     const available = getAvailableThemes();
     throw new Error(`Theme "${config.theme}" not found. Available themes: ${available.join(", ")}`);
-  }
-
-  if (!fontExists(config.fontTheme)) {
-    const available = getAvailableFonts();
-    throw new Error(
-      `Font "${config.fontTheme}" not found. Available fonts: ${available.join(", ")}`
-    );
   }
 
   if (config.port < 0 || config.port > 65_535) {
