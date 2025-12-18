@@ -50,13 +50,14 @@ describe("Event Service", () => {
     setupTestDirectory();
   });
 
-  test("should return null when LLMD_ENABLE_EVENTS is not set (opt-in)", () => {
-    // Events should be disabled by default (opt-in)
+  test("should initialize by default when LLMD_ENABLE_EVENTS is not set (opt-out)", () => {
+    // Events are enabled by default (opt-out)
     process.env.LLMD_ENABLE_EVENTS = undefined;
     const config = createTestConfig(TEST_DIR);
     const service = initEventService(config, ":memory:");
 
-    expect(service).toBeNull();
+    expect(service).not.toBeNull();
+    service?.close();
 
     process.env.LLMD_ENABLE_EVENTS = undefined;
     cleanupTestDirectory();

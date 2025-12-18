@@ -2,6 +2,8 @@
 
 Extract and save important passages from your markdown documentation.
 
+**Highlights is enabled by default.** You can disable it at any time using `llmd highlights disable`.
+
 ## Overview
 
 The highlights feature allows you to mark and save important text passages while reading your markdown files. Highlights are stored in a local SQLite database and persist across sessions. When you modify a file, llmd automatically tracks whether highlights are still valid.
@@ -12,18 +14,24 @@ The highlights feature allows you to mark and save important text passages while
 
 1. Open any markdown file in llmd
 2. Select the text you want to highlight with your mouse
-3. Click the "Create Highlight" button that appears
-4. The text is immediately highlighted in yellow
+3. A popup appears near your selection with:
+   - An optional notes text area
+   - A "Create Highlight" button
+   - A close button (×) to dismiss without saving
+4. Add notes (optional) or click "Create Highlight"
+5. The text is immediately highlighted with your theme's highlight color
+
+The highlight is saved to the database and will persist across sessions.
 
 ### Viewing Highlights
 
 **On the page:**
-- Highlights appear with a yellow background and underline
+- Highlights appear with your theme's highlight color and a border
 - A summary box shows all highlights for the current file
 - Click any highlight in the summary to scroll to it in the document
 
 **In the highlights page:**
-- Click "Highlights" in the sidebar under "Special Pages"
+- Click "Highlights" in the sidebar under "Admin"
 - View all highlights across your entire directory
 - See which file each highlight belongs to
 - Identify stale highlights (marked with ⚠️)
@@ -37,7 +45,7 @@ When you edit a file, llmd checks if the highlighted text still exists:
 - ⚠️ **Stale**: Text not found or appears multiple times → marked as stale
 
 Stale highlights are displayed with:
-- Red background and dashed border
+- Your theme's stale highlight color and dashed border
 - Warning icon in the summary
 - Option to restore the original file
 
@@ -56,13 +64,14 @@ This backup lets you restore the file to its original state if highlights become
 All highlights data is stored in the llmd SQLite database at:
 
 ```
-~/.cache/llmd/events.db
+~/.local/share/llmd/llmd.db
 ```
 
 The database includes:
-- **Highlights**: Byte offsets, text content, timestamps, stale status
+- **Highlights**: Byte offsets, text content, timestamps, stale status, notes
 - **Resources**: File paths, content hashes, backup paths  
 - **Validation**: SHA-256 hashes to detect file changes
+- **Analytics**: Usage events and statistics (if analytics is enabled)
 
 ## Technical Details
 
@@ -160,22 +169,71 @@ Restore file from backup.
 }
 ```
 
+## CLI Commands
+
+### Enable/Disable Highlights
+
+Highlights is **enabled by default**. You can disable or re-enable it:
+
+```bash
+# Disable highlights feature
+llmd highlights disable
+
+# Re-enable highlights feature
+llmd highlights enable
+```
+
+The setting is stored in the database at `~/.local/share/llmd/llmd.db` and persists across sessions. When disabled, the highlight creation UI and API endpoints will not be available.
+
+### Export Highlights
+
+Export all highlights from a directory to a markdown file:
+
+```bash
+llmd export              # Export current directory
+llmd export ./docs       # Export specific directory
+```
+
+Exports are saved to `~/.llmd/{directory}-{date}.md` with:
+- File grouping by document
+- Creation timestamps
+- Original highlighted text
+- Any notes (if added)
+
+### Archive Management
+
+The archive stores backup copies of files when highlights are created.
+
+**List backups:**
+```bash
+llmd archive list
+```
+
+**Show backup details:**
+```bash
+llmd archive show README.md
+```
+
+**Clear all backups:**
+```bash
+llmd archive clear
+```
+
+Archive location: `~/.cache/llmd/file-backups/`
+
 ## Limitations
 
 - **Binary offsets**: Highlights use byte positions, not character positions
 - **No line tracking**: Changes above a highlight shift its position
 - **Single file only**: Can't highlight across multiple files
 - **No categories**: All highlights are treated equally
-- **No export**: Highlights are stored in SQLite only (not portable)
 
 ## Future Enhancements
 
 Potential improvements for future versions:
 
-- Export highlights to markdown/JSON
 - Highlight categories and colors
 - Search across all highlights
 - Highlight notes and annotations
 - Line-based tracking (more resilient to edits)
 - Diff preview when restoring files
-- Bulk operations (delete all stale, export all)

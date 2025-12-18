@@ -17,19 +17,23 @@ Create custom color themes in your `themes.json` config file.
 
 ### Format
 
+All theme properties are required:
+
 ```json
 {
   "colorThemes": {
     "mytheme": {
-      "bg": "#1a1a1a",
-      "fg": "#e0e0e0",
-      "border": "#333",
-      "hover": "#2a2a2a",
-      "accent": "#4a9eff",
-      "codeBg": "#2d2d2d",
-      "sidebarBg": "#151515",
-      "folderIcon": "#a78bfa",
-      "fileIcon": "#fbbf24"
+      "bg": "#1a1a1a",           // Main background
+      "fg": "#e0e0e0",           // Main text color
+      "border": "#333",          // Border color
+      "hover": "#2a2a2a",        // Hover state background
+      "accent": "#4a9eff",       // Accent color (links, etc.)
+      "codeBg": "#2d2d2d",       // Code block background
+      "sidebarBg": "#151515",    // Sidebar background
+      "folderIcon": "#a78bfa",   // Folder icon color
+      "fileIcon": "#fbbf24",     // File icon color
+      "highlightBg": "#fbbf24",  // Active highlight background
+      "highlightStaleBg": "#f97316"  // Stale highlight background
     }
   }
 }
