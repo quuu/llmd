@@ -92,6 +92,7 @@ const handleMarkdownView = async (
       fileName: filename,
       files,
       config,
+      currentPath: viewPath,
       clientScript,
     });
 

@@ -15,7 +15,7 @@ type Highlight = {
 let highlights: Highlight[] = [];
 let popup: HTMLElement | null = null;
 let currentSelection: { text: string; range: Range } | null = null;
-const openNotesPopups: Map<string, HTMLElement> = new Map(); // Track open notes popups by highlight ID
+const openNotesPopups: Map<string, HTMLElement> = new Map();
 
 // Initialize highlights on page load
 export const initHighlights = (): void => {
@@ -58,7 +58,7 @@ const fetchHighlights = async (): Promise<void> => {
 const handleTextSelection = (e: Event): void => {
   // Ignore events inside the popup
   const target = e.target as Node;
-  if (popup && popup.contains(target)) {
+  if (popup?.contains(target)) {
     return;
   }
 
@@ -81,6 +81,32 @@ const handleTextSelection = (e: Event): void => {
   }
 
   const range = selection.getRangeAt(0);
+
+  // Check if selection spans multiple block elements
+  // Get the closest block element for start and end
+  const getBlockParent = (node: Node): Element | null => {
+    let current = node.nodeType === Node.TEXT_NODE ? node.parentElement : (node as Element);
+    while (current && current !== contentArea) {
+      const tag = current.tagName?.toLowerCase();
+      if (
+        tag &&
+        ["p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "blockquote", "pre"].includes(tag)
+      ) {
+        return current;
+      }
+      current = current.parentElement;
+    }
+    return null;
+  };
+
+  const startBlock = getBlockParent(range.startContainer);
+  const endBlock = getBlockParent(range.endContainer);
+
+  if (startBlock !== endBlock) {
+    hidePopup();
+    return;
+  }
+
   const container = range.commonAncestorContainer;
   const parentElement = container.nodeType === Node.TEXT_NODE ? container.parentElement : container;
 
@@ -111,7 +137,7 @@ const showPopup = (e: MouseEvent): void => {
   const y = e.pageY;
 
   popup.style.left = `${x}px`;
-  popup.style.top = `${y - 50}px`; // Position above cursor
+  popup.style.top = `${y - 50}px`;
   popup.style.display = "block";
 };
 
@@ -191,15 +217,14 @@ const showNotesPopup = (highlight: Highlight, e: MouseEvent): void => {
   // Track this popup
   openNotesPopups.set(highlight.id, notesPopup);
 
-  // Close when clicking outside - use a unique handler per popup
-  const closeOnClickOutside = (clickEvent: MouseEvent) => {
+  // Close when clicking outside
+  const closeOnClickOutside = (clickEvent: MouseEvent): void => {
     if (!notesPopup.contains(clickEvent.target as Node)) {
       notesPopup.remove();
       openNotesPopups.delete(highlight.id);
       document.removeEventListener("click", closeOnClickOutside);
     }
   };
-  // Delay to avoid immediate closure from the same click that opened it
   setTimeout(() => {
     document.addEventListener("click", closeOnClickOutside);
   }, 0);
@@ -246,6 +271,44 @@ const createPopup = (): HTMLElement => {
   return div;
 };
 
+// Helper: calculate offset in plain text (removing all mark elements)
+const calculateTextOffset = (
+  contentArea: Element,
+  targetContainer: Node,
+  targetOffset: number
+): number => {
+  // Create a tree walker to iterate through all text nodes
+  const walker = document.createTreeWalker(contentArea, NodeFilter.SHOW_TEXT);
+
+  let totalOffset = 0;
+  let node = walker.nextNode();
+
+  while (node) {
+    // Skip text inside mark elements (existing highlights)
+    let parent = node.parentElement;
+    let isInsideMark = false;
+    while (parent && parent !== contentArea) {
+      if (parent.tagName === "MARK" && parent.classList.contains("llmd-highlight")) {
+        isInsideMark = true;
+        break;
+      }
+      parent = parent.parentElement;
+    }
+
+    if (node === targetContainer) {
+      return totalOffset + targetOffset;
+    }
+
+    if (!isInsideMark) {
+      totalOffset += node.textContent?.length || 0;
+    }
+
+    node = walker.nextNode();
+  }
+
+  return totalOffset;
+};
+
 // Create highlight via API
 const createHighlight = async (): Promise<void> => {
   if (!currentSelection) {
@@ -253,20 +316,15 @@ const createHighlight = async (): Promise<void> => {
   }
 
   try {
-    // Calculate offsets in the document
     const contentArea = document.querySelector(".content");
     if (!contentArea) {
       return;
     }
 
-    const _fullText = contentArea.textContent || "";
     const range = currentSelection.range;
 
-    // Find the start offset by getting all text before the selection
-    const preRange = document.createRange();
-    preRange.selectNodeContents(contentArea);
-    preRange.setEnd(range.startContainer, range.startOffset);
-    const startOffset = preRange.toString().length;
+    // Calculate offsets by walking text nodes and skipping mark elements
+    const startOffset = calculateTextOffset(contentArea, range.startContainer, range.startOffset);
     const endOffset = startOffset + currentSelection.text.length;
 
     // Get notes from textarea
@@ -291,33 +349,10 @@ const createHighlight = async (): Promise<void> => {
       throw new Error("Failed to create highlight");
     }
 
-    const data = await response.json();
-
-    // Add to local state
-    highlights.push({
-      id: data.id,
-      startOffset,
-      endOffset,
-      highlightedText: currentSelection.text,
-      isStale: false,
-      notes: notes || null,
-      createdAt: Date.now(),
-    });
-
-    // Re-render highlights
-    renderHighlights();
-
-    // Clear textarea
-    if (notesInput) {
-      notesInput.value = "";
-    }
-
-    // Hide popup and clear selection
-    hidePopup();
-    window.getSelection()?.removeAllRanges();
+    // Reload the page to show updated highlights
+    window.location.reload();
   } catch (err) {
     console.error("[highlights] Failed to create highlight:", err);
-    // TODO: Replace with non-obtrusive UI notification
   }
 };
 
@@ -330,7 +365,7 @@ const renderHighlights = (): void => {
 
   // Remove existing highlight marks
   const existingMarks = contentArea.querySelectorAll("mark.llmd-highlight");
-  for (const mark of existingMarks) {
+  for (const mark of Array.from(existingMarks)) {
     const parent = mark.parentNode;
     if (parent) {
       parent.replaceChild(document.createTextNode(mark.textContent || ""), mark);
@@ -344,73 +379,83 @@ const renderHighlights = (): void => {
     return;
   }
 
-  // Sort highlights by start offset (reverse so we can apply from end to start)
+  // Sort highlights by start offset (reverse so we apply from end to start)
   const sortedHighlights = [...highlights].sort((a, b) => b.startOffset - a.startOffset);
-
-  // Get all text content
-  const _fullText = contentArea.textContent || "";
 
   // Apply each highlight
   for (const highlight of sortedHighlights) {
-    try {
-      // Find the text nodes that contain this highlight
-      const walker = document.createTreeWalker(contentArea, NodeFilter.SHOW_TEXT);
+    applyHighlight(contentArea, highlight);
+  }
+};
 
-      let currentOffset = 0;
-      let startNode: Node | null = null;
-      let startNodeOffset = 0;
-      let endNode: Node | null = null;
-      let endNodeOffset = 0;
+// Helper: apply a single highlight to the DOM
+const applyHighlight = (contentArea: Element, highlight: Highlight): void => {
+  try {
+    // Find the text nodes that contain this highlight
+    const walker = document.createTreeWalker(contentArea, NodeFilter.SHOW_TEXT);
 
-      // Find start and end nodes
-      let node: Node | null = walker.nextNode();
-      while (node) {
-        const nodeLength = node.textContent?.length || 0;
-        const nodeEnd = currentOffset + nodeLength;
+    let currentOffset = 0;
+    let startNode: Node | null = null;
+    let startNodeOffset = 0;
+    let endNode: Node | null = null;
+    let endNodeOffset = 0;
 
-        if (
-          startNode === null &&
-          currentOffset <= highlight.startOffset &&
-          highlight.startOffset < nodeEnd
-        ) {
-          startNode = node;
-          startNodeOffset = highlight.startOffset - currentOffset;
-        }
+    // Find start and end nodes
+    let node = walker.nextNode();
+    while (node) {
+      const nodeLength = node.textContent?.length || 0;
+      const nodeEnd = currentOffset + nodeLength;
 
-        if (currentOffset < highlight.endOffset && highlight.endOffset <= nodeEnd) {
-          endNode = node;
-          endNodeOffset = highlight.endOffset - currentOffset;
-          break;
-        }
-
-        currentOffset = nodeEnd;
-        node = walker.nextNode();
+      const startInRange =
+        currentOffset <= highlight.startOffset && highlight.startOffset < nodeEnd;
+      if (startNode === null && startInRange) {
+        startNode = node;
+        startNodeOffset = highlight.startOffset - currentOffset;
       }
 
-      if (!(startNode && endNode)) {
-        continue;
+      const endInRange = currentOffset < highlight.endOffset && highlight.endOffset <= nodeEnd;
+      if (endInRange) {
+        endNode = node;
+        endNodeOffset = highlight.endOffset - currentOffset;
+        break;
       }
 
-      // Create range and wrap in mark element
-      const range = document.createRange();
-      range.setStart(startNode, startNodeOffset);
-      range.setEnd(endNode, endNodeOffset);
-
-      const mark = document.createElement("mark");
-      mark.className = highlight.isStale ? "llmd-highlight llmd-highlight-stale" : "llmd-highlight";
-      mark.dataset.highlightId = highlight.id;
-      mark.title = highlight.isStale ? "This highlight may be outdated" : "";
-      mark.style.cursor = "pointer";
-
-      // Add click handler to show notes
-      mark.addEventListener("click", (e) => {
-        e.stopPropagation();
-        showNotesPopup(highlight, e as MouseEvent);
-      });
-
-      range.surroundContents(mark);
-    } catch (err) {
-      console.error("[highlights] Failed to render highlight:", err);
+      currentOffset = nodeEnd;
+      node = walker.nextNode();
     }
+
+    // biome-ignore lint/complexity/useOptionalChain: false positive - these are independent nullable values
+    if (!(startNode && endNode)) {
+      return;
+    }
+
+    // Create range and wrap in mark element
+    const range = document.createRange();
+    range.setStart(startNode, startNodeOffset);
+    range.setEnd(endNode, endNodeOffset);
+
+    const mark = document.createElement("mark");
+    mark.className = highlight.isStale ? "llmd-highlight llmd-highlight-stale" : "llmd-highlight";
+    mark.dataset.highlightId = highlight.id;
+    mark.title = highlight.isStale ? "This highlight may be outdated" : "";
+    mark.style.cursor = "pointer";
+
+    // Add click handler to show notes
+    mark.addEventListener("click", (e) => {
+      e.stopPropagation();
+      showNotesPopup(highlight, e as MouseEvent);
+    });
+
+    // Use surroundContents for simple cases, or extract and wrap contents manually
+    try {
+      range.surroundContents(mark);
+    } catch {
+      // If surroundContents fails (partial element selection), extract and wrap
+      const fragment = range.extractContents();
+      mark.appendChild(fragment);
+      range.insertNode(mark);
+    }
+  } catch (err) {
+    console.error("[highlights] Failed to render highlight:", err);
   }
 };

@@ -16,7 +16,7 @@ describe("scanMarkdownFiles", () => {
   test("finds nested markdown files", async () => {
     const files = await scanMarkdownFiles(FIXTURES_DIR);
 
-    expect(files.some((f) => f.path.includes("sub1"))).toBe(true);
+    expect(files.some((f) => f.path.includes("subdirectory"))).toBe(true);
     expect(files.some((f) => f.name === "guide.md")).toBe(true);
   });
 
@@ -44,7 +44,7 @@ describe("scanMarkdownFiles", () => {
   test("calculates correct depth", async () => {
     const files = await scanMarkdownFiles(FIXTURES_DIR);
     const rootFile = files.find((f) => f.name === "README.md");
-    const nestedFile = files.find((f) => f.path.includes("sub1") && f.name === "guide.md");
+    const nestedFile = files.find((f) => f.path.includes("subdirectory") && f.name === "guide.md");
 
     expect(rootFile?.depth).toBe(0);
     expect(nestedFile?.depth).toBeGreaterThan(0);

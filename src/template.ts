@@ -182,7 +182,6 @@ const getStyles = (themeName: string): string => {
       width: 18px;
       height: 18px;
       flex-shrink: 0;
-      opacity: 0.9;
       color: ${colors.folderIcon};
       stroke: currentColor;
     }
@@ -205,7 +204,6 @@ const getStyles = (themeName: string): string => {
       width: 18px;
       height: 18px;
       flex-shrink: 0;
-      opacity: 0.8;
       color: ${colors.fileIcon};
       stroke: currentColor;
     }
@@ -228,10 +226,6 @@ const getStyles = (themeName: string): string => {
       background: var(--accent);
       color: ${isDark ? "#000000" : "#ffffff"};
       font-weight: 600;
-    }
-    
-    .sidebar-nav a.active svg {
-      opacity: 1;
     }
     
     .sidebar-nav .depth-0 { padding-left: 6px; }
@@ -547,7 +541,7 @@ const getStyles = (themeName: string): string => {
     
     /* Highlights */
     .llmd-highlight {
-      background: color-mix(in srgb, var(--highlight-bg) 25%, transparent);
+      background: color-mix(in srgb, var(--highlight-bg) 50%, transparent);
       border-bottom: 2px solid color-mix(in srgb, var(--highlight-bg) 60%, ${isDark ? "#000" : "#fff"});
       cursor: pointer;
       transition: background 0.2s;
@@ -703,13 +697,13 @@ const renderTreeNodes = (nodes: TreeNode[], currentPath?: string): string =>
           return "";
         }
         return `<li class="dir-item">
-          <div class="dir-label depth-${node.depth}">${FOLDER_ICON}<span>${node.name}/</span></div>
+          <div class="nav-link-dir dir-label depth-${node.depth}">${FOLDER_ICON}<span>${node.name}/</span></div>
           <ul>${children}</ul>
         </li>`;
       }
       const isActive = currentPath === node.path;
       const activeClass = isActive ? "active" : "";
-      return `<li><a href="/view/${node.path}" class="depth-${node.depth} ${activeClass}" data-file-path="${node.path}"><span class="file-icon">${FILE_ICON}</span><span>${node.name}</span></a></li>`;
+      return `<li><a href="/view/${node.path}" class="nav-link-file depth-${node.depth} ${activeClass}" data-file-path="${node.path}">${FILE_ICON}<span>${node.name}</span></a></li>`;
     })
     .join("\n");
 
