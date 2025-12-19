@@ -656,6 +656,11 @@ export const getAnalyticsStatus = (): {
 // Side effect: save theme preferences to database
 export const saveThemePreferences = (theme: string): void => {
   try {
+    // Skip if theme is empty or undefined
+    if (!theme) {
+      return;
+    }
+
     const dbPath = resolveDatabasePath();
     const db = createDatabase(dbPath);
     initializeDatabase(db);
