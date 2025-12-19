@@ -7,14 +7,7 @@ import { basename, dirname, join } from "node:path";
 import type { Config, EventService, EventType, ResourceType } from "./types";
 
 // Directories to ignore (as subdirectories, not if they're the root)
-const IGNORED_DIRECTORIES = [
-  "node_modules",
-  ".git",
-  "dist",
-  "build",
-  "test-fixtures",
-  "preview-output",
-];
+const IGNORED_DIRECTORIES = ["node_modules", ".git", "dist", "build", "test-fixtures"];
 
 // Dynamic database creation for Bun vs Node.js compatibility using libsql
 // biome-ignore lint/suspicious/noExplicitAny: Runtime compatibility layer

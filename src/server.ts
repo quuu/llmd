@@ -61,30 +61,6 @@ const sendResponse = (
 // Regex for matching .md extension (top-level to avoid re-creation)
 const MD_EXTENSION = /\.md$/;
 
-// Helper: extract theme/font from filename (for preview mode)
-// Format: theme-font.md (e.g., "dark-modern.md", "nord-classic.md")
-//
-// IMPORTANT: This extraction ALWAYS takes precedence over CLI flags when a match is found.
-// This enables the preview generation workflow where each file demonstrates a different theme/font:
-// - "nord-modern.md" → forces nord theme + modern font
-// - "dark.md" → only extracts theme (font falls back to CLI or default)
-// - "modern.md" → only extracts font (theme falls back to CLI or default)
-// - "preview-1.md" → no extraction (CLI flags apply to all files)
-//
-// See scripts/generate-preview.ts for the preview generation workflow.
-const extractPreviewConfig = (filename: string): { theme?: string } | null => {
-  // Remove .md extension and check if it's a theme name
-  const nameWithoutExt = filename.replace(MD_EXTENSION, "");
-
-  // If filename is just a single word (no hyphens or slashes), treat it as a theme name
-  // This allows for files like "nord.md" or "dracula.md" to preview themes
-  if (nameWithoutExt && !nameWithoutExt.includes("-") && !nameWithoutExt.includes("/")) {
-    return { theme: nameWithoutExt };
-  }
-
-  return null;
-};
-
 // Helper: handle markdown file view
 const handleMarkdownView = async (
   viewPath: string,
@@ -108,26 +84,14 @@ const handleMarkdownView = async (
   }
 
   try {
-    // Check if this is a preview file and extract theme/font from filename
     const filename = viewPath.split("/").pop() ?? viewPath;
-    const previewConfig = extractPreviewConfig(filename);
-
-    // Override config with preview settings if detected
-    const renderConfig = previewConfig
-      ? {
-          ...config,
-          theme: previewConfig.theme ?? config.theme,
-        }
-      : config;
-
-    const { html, toc } = await processMarkdown(markdown, renderConfig.theme);
+    const { html, toc } = await processMarkdown(markdown, config.theme);
     const page = generateMarkdownPage({
       html,
       toc,
       fileName: filename,
       files,
-      config: renderConfig,
-      currentPath: viewPath,
+      config,
       clientScript,
     });
 

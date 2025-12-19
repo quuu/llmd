@@ -34,7 +34,6 @@
     "test": "bun test",
     "build": "bash scripts/build.sh",
     "prepublishOnly": "bun test && bun run build",
-    "preview": "bun scripts/generate-preview.ts",
     "check-contrast": "bun scripts/check-contrast.ts",
     "format": "biome format --write .",
     "format:check": "biome format .",

@@ -40,10 +40,10 @@ Manual vibe check before releasing a new version of llmd.
 - [ ] **Invalid theme**: `--theme nonexistent` shows helpful error message
 - [ ] **Port conflict**: Try to start on already-used port
 
-### Preview/Demo
-- [ ] **Generate preview**: `bun run preview` creates preview files
-- [ ] **Preview themes**: View `preview-output/*.md` files with different themes
-- [ ] **Screenshots look good**: Check theme screenshots are up to date
+### Theme Testing
+- [ ] **Test all themes**: Try each built-in theme with `--theme` flag
+- [ ] **Custom themes**: Test loading custom themes from themes.json
+- [ ] **Theme switching**: Verify theme toggle works in browser UI
 
 ## Version Management
 
