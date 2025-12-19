@@ -16,7 +16,6 @@ let highlights: Highlight[] = [];
 let popup: HTMLElement | null = null;
 let currentSelection: { text: string; range: Range } | null = null;
 const openNotesPopups: Map<string, HTMLElement> = new Map();
-let rawMarkdownContent = ""; // Cache the raw markdown content
 
 // Initialize highlights on page load
 export const initHighlights = (): void => {
@@ -25,31 +24,12 @@ export const initHighlights = (): void => {
     return;
   }
 
-  // Fetch raw markdown and existing highlights for this page
-  fetchRawMarkdown();
+  // Fetch existing highlights for this page
   fetchHighlights();
 
   // Listen for text selection
   document.addEventListener("mouseup", handleTextSelection);
   document.addEventListener("touchend", handleTextSelection);
-};
-
-// Fetch raw markdown content for offset calculation
-const fetchRawMarkdown = async (): Promise<void> => {
-  try {
-    const currentPath = window.location.pathname.replace("/view/", "");
-    const response = await fetch(`/api/markdown/raw?path=${encodeURIComponent(currentPath)}`);
-
-    if (!response.ok) {
-      console.error("[highlights] Failed to fetch raw markdown");
-      return;
-    }
-
-    const data = await response.json();
-    rawMarkdownContent = data.content || "";
-  } catch (err) {
-    console.error("[highlights] Failed to fetch raw markdown:", err);
-  }
 };
 
 // Fetch highlights for current page
@@ -336,27 +316,19 @@ const createHighlight = async (): Promise<void> => {
   }
 
   try {
-    if (!rawMarkdownContent) {
-      console.error("[highlights] Raw markdown not loaded");
+    const contentArea = document.querySelector(".content");
+    if (!contentArea) {
       return;
     }
 
     const selectedText = currentSelection.text;
+    const range = currentSelection.range;
 
-    // Find the selected text in the raw markdown
-    const startOffset = rawMarkdownContent.indexOf(selectedText);
-    if (startOffset === -1) {
-      console.error("[highlights] Selected text not found in markdown");
-      return;
-    }
-
-    // Check for ambiguous text (multiple occurrences)
-    const lastIndex = rawMarkdownContent.lastIndexOf(selectedText);
-    if (startOffset !== lastIndex) {
-      console.error("[highlights] Selected text appears multiple times in markdown");
-      return;
-    }
-
+    // Calculate position in the rendered plain text (without HTML tags)
+    const preRange = document.createRange();
+    preRange.selectNodeContents(contentArea);
+    preRange.setEnd(range.startContainer, range.startOffset);
+    const startOffset = preRange.toString().length;
     const endOffset = startOffset + selectedText.length;
 
     // Get notes from textarea
