@@ -188,7 +188,7 @@ Cleanup Results:
   Deleted resources: 123
 ```
 
-**Note:** This preserves recent analytics data while freeing up disk space. Theme/font preferences are not affected.
+**Note:** This preserves recent analytics data while freeing up disk space. Theme preferences are not affected.
 
 ### Clear All Data
 
@@ -202,7 +202,7 @@ llmd db clear
 1. Prompts for confirmation (you must type `yeah really plz delete`)
 2. Deletes all events and resources
 3. Runs VACUUM to reclaim disk space
-4. Preserves theme/font preferences
+4. Preserves theme preferences
 
 **Warning:** This action cannot be undone. All analytics history will be permanently deleted.
 

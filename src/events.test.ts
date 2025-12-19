@@ -14,7 +14,6 @@ const createTestConfig = (directory: string): Config => ({
   directory,
   port: 0,
   theme: "dark",
-  fontTheme: "sans",
   open: false,
   watch: false,
 });

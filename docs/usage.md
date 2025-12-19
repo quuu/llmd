@@ -50,38 +50,37 @@ llmd docs
 
 ## Command-Line Options
 
-| Flag                   | Description                                                                                                | Default      |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------- | ------------ |
-| `--port <number>`      | Port (0 = random)                                                                                          | `0` (random) |
-| `--theme <name>`       | Color theme: `dark`, `light`, `nord`, `dracula`, `solarized`, `monokai`, or custom                         | `dark`* |
-| `--fonts <name>`       | Font combination: `serif`, `sans`, `mono`, `classic`, `future`, `modern`, `artsy`, `literary`, `editorial` | `sans`* |
-| `--open / --no-open`   | Auto-open browser                                                                                          | `--open`     |
-| `--watch / --no-watch` | Live reload on changes                                                                                     | `--no-watch` |
-| `--days <number>`      | Number of days for `db cleanup` command                                                                    | `30`         |
-| `-h, --help`           | Show help                                                                                                  |              |
-| `--version`            | Show version                                                                                               |              |
+| Flag                   | Description                                                                | Default      |
+| ---------------------- | -------------------------------------------------------------------------- | ------------ |
+| `--port <number>`      | Port (0 = random)                                                          | `0` (random) |
+| `--theme <name>`       | Theme (colors + fonts): `dark`, `light`, `nord`, `dracula`, `solarized`, `monokai`, or custom | `dark`* |
+| `--open / --no-open`   | Auto-open browser                                                          | `--open`     |
+| `--watch / --no-watch` | Live reload on changes                                                     | `--no-watch` |
+| `--days <number>`      | Number of days for `db cleanup` command                                    | `30`         |
+| `-h, --help`           | Show help                                                                  |              |
+| `--version`            | Show version                                                               |              |
 
-\* Theme and font preferences are saved automatically. The default is used only on first run.
+\* Theme preference is saved automatically. The default is used only on first run.
 
 ## Theme Persistence
 
-llmd remembers your last theme and font choices. When you run llmd with `--theme` or `--fonts`, that selection is saved and becomes your new default:
+llmd remembers your last theme choice. When you run llmd with `--theme`, that selection is saved and becomes your new default:
 
 ```bash
-# First time - uses default (dark + sans)
+# First time - uses default (dark theme)
 llmd ./docs
 
-# Set your preferred theme and fonts
-llmd ./docs --theme nord --fonts modern
+# Set your preferred theme
+llmd ./docs --theme nord
 
-# Next time - automatically uses nord + modern
+# Next time - automatically uses nord
 llmd ./docs
 
 # Override saved preference temporarily
 llmd ./docs --theme dracula
 ```
 
-Your preferences are stored in `~/.local/share/llmd/llmd.db` and persist across sessions. To reset to defaults, delete the database:
+Your preference is stored in `~/.local/share/llmd/llmd.db` and persists across sessions. To reset to defaults, delete the database:
 
 ```bash
 rm ~/.local/share/llmd/llmd.db
@@ -132,6 +131,6 @@ This command:
 1. Prompts for confirmation (requires typing "yeah really plz delete")
 2. Deletes all events and resources
 3. Runs VACUUM to reclaim disk space
-4. Preserves theme/font preferences
+4. Preserves theme preferences
 
 **Warning**: This action cannot be undone.
