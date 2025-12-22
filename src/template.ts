@@ -25,6 +25,7 @@ const getStyles = (themeName: string): string => {
       --sidebar-bg: ${colors.sidebarBg};
       --highlight-bg: ${colors.highlightBg};
       --highlight-stale-bg: ${colors.highlightStaleBg};
+      --heading-color: ${colors.headingColor || colors.fg};
     }
     
     body {
@@ -273,6 +274,7 @@ const getStyles = (themeName: string): string => {
       font-weight: 700;
       line-height: 1.3;
       letter-spacing: -0.02em;
+      color: var(--heading-color);
     }
     
     .content h1 { 

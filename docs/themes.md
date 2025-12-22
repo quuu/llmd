@@ -34,7 +34,8 @@ All theme properties are required:
         "folderIcon": "#a78bfa",        // Folder icon color
         "fileIcon": "#fbbf24",          // File icon color
         "highlightBg": "#fbbf24",       // Active highlight background
-        "highlightStaleBg": "#f97316"   // Stale highlight background
+        "highlightStaleBg": "#f97316",  // Stale highlight background
+        "headingColor": "#60a5fa"       // Optional: Heading color (h1-h6, defaults to fg)
       },
       "fonts": {
         "body": "Georgia, serif",       // Body text font

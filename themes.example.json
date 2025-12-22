@@ -15,7 +15,8 @@
         "folderIcon": "#00d4ff",
         "fileIcon": "#ff00aa",
         "highlightBg": "#ff00aa",
-        "highlightStaleBg": "#8800aa"
+        "highlightStaleBg": "#8800aa",
+        "headingColor": "#00d4ff"
       },
       "fonts": {
         "heading": "JetBrains Mono, monospace",

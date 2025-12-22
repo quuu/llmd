@@ -20,6 +20,8 @@ export type Theme = {
     // Highlight colors (borders will be derived using relative CSS colors)
     highlightBg: string; // Background color for valid highlights
     highlightStaleBg: string; // Background color for stale highlights
+    // Heading color (optional, defaults to fg if not specified)
+    headingColor?: string;
   };
   // Font configuration
   fonts: {
