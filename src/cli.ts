@@ -89,7 +89,7 @@ Options:
 `;
 
 const HELP_TEXT = `
-llmd - Serve Markdown files as beautiful HTML
+llmd - Serve LLM-generated documentation and track usage
 
 Usage:
   llmd [path] [options]
