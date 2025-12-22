@@ -4,27 +4,19 @@ import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 
 // Import only specific language grammars we need
 import bash from "shiki/langs/bash.mjs";
-import c from "shiki/langs/c.mjs";
-import cpp from "shiki/langs/cpp.mjs";
-import csharp from "shiki/langs/csharp.mjs";
 import css from "shiki/langs/css.mjs";
 import dockerfile from "shiki/langs/dockerfile.mjs";
 import go from "shiki/langs/go.mjs";
 import html from "shiki/langs/html.mjs";
-import java from "shiki/langs/java.mjs";
 import javascript from "shiki/langs/javascript.mjs";
 import json from "shiki/langs/json.mjs";
 import jsx from "shiki/langs/jsx.mjs";
-import kotlin from "shiki/langs/kotlin.mjs";
 import markdown from "shiki/langs/markdown.mjs";
-import php from "shiki/langs/php.mjs";
 import python from "shiki/langs/python.mjs";
 import ruby from "shiki/langs/ruby.mjs";
 import rust from "shiki/langs/rust.mjs";
-import scss from "shiki/langs/scss.mjs";
 import shell from "shiki/langs/shellscript.mjs";
 import sql from "shiki/langs/sql.mjs";
-import swift from "shiki/langs/swift.mjs";
 import toml from "shiki/langs/toml.mjs";
 import tsx from "shiki/langs/tsx.mjs";
 import typescript from "shiki/langs/typescript.mjs";
@@ -69,18 +61,10 @@ const languageModules = {
   json,
   html,
   css,
-  scss,
   python,
   rust,
   go,
-  java,
-  c,
-  cpp,
-  csharp,
-  php,
   ruby,
-  swift,
-  kotlin,
   bash,
   shell,
   sql,
