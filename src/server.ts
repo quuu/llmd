@@ -62,13 +62,15 @@ const sendResponse = (
 const MD_EXTENSION = /\.md$/;
 
 // Helper: handle markdown file view
-const handleMarkdownView = async (
-  viewPath: string,
-  config: Config,
-  files: MarkdownFile[],
-  clientScript: string,
-  res: import("node:http").ServerResponse
-): Promise<void> => {
+const handleMarkdownView = async (params: {
+  viewPath: string;
+  config: Config;
+  files: MarkdownFile[];
+  clientScript: string;
+  res: import("node:http").ServerResponse;
+  eventService: EventService | null;
+}): Promise<void> => {
+  const { viewPath, config, files, clientScript, res, eventService } = params;
   const markdown = await readMarkdownFile(config.directory, viewPath);
 
   if (!markdown) {
@@ -84,8 +86,25 @@ const handleMarkdownView = async (
   }
 
   try {
+    // Inject highlight marks into markdown before rendering
+    let markdownWithHighlights = markdown;
+    if (eventService) {
+      const pathModule = await import("node:path");
+      const highlightsModule = await import("./highlights");
+      const db = eventService.getDatabase();
+      const absolutePath = pathModule.join(config.directory, viewPath);
+      const resource = highlightsModule.getResourceByPath(db, absolutePath);
+
+      if (resource) {
+        const highlights = highlightsModule.getHighlightsByResource(db, resource.id);
+        if (highlights.length > 0) {
+          markdownWithHighlights = injectHighlightMarks(markdown, highlights);
+        }
+      }
+    }
+
     const filename = viewPath.split("/").pop() ?? viewPath;
-    const { html, toc } = await processMarkdown(markdown, config.theme);
+    const { html, toc } = await processMarkdown(markdownWithHighlights, config.theme);
     const page = generateMarkdownPage({
       html,
       toc,
@@ -108,6 +127,39 @@ const handleMarkdownView = async (
     });
     sendResponse(res, 500, htmlHeaders(), errorHtml);
   }
+};
+
+// Helper: inject highlight marks into markdown source
+const injectHighlightMarks = (
+  markdown: string,
+  highlights: Array<{
+    id: string;
+    startOffset: number;
+    endOffset: number;
+    isStale: boolean;
+  }>
+): string => {
+  // Filter out stale highlights - don't render them inline
+  const activeHighlights = highlights.filter((h) => !h.isStale);
+
+  // Sort highlights by start offset in reverse order
+  const sorted = [...activeHighlights].sort((a, b) => b.startOffset - a.startOffset);
+
+  let result = markdown;
+
+  // Apply highlights from end to start to avoid offset shifts
+  for (const highlight of sorted) {
+    const before = result.slice(0, highlight.startOffset);
+    const text = result.slice(highlight.startOffset, highlight.endOffset);
+    const after = result.slice(highlight.endOffset);
+
+    // Create mark element with highlight ID
+    const mark = `<mark class="llmd-highlight" data-highlight-id="${highlight.id}">${text}</mark>`;
+
+    result = before + mark + after;
+  }
+
+  return result;
 };
 
 // Helper: parse JSON body from request
@@ -289,7 +341,7 @@ const createHandler = (
     // Route: View markdown file
     const viewPath = parseViewPath(pathname);
     if (viewPath) {
-      await handleMarkdownView(viewPath, config, files, clientScript, res);
+      await handleMarkdownView({ viewPath, config, files, clientScript, res, eventService });
       return;
     }
 
