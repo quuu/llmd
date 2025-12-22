@@ -8,6 +8,7 @@ import {
   computeFileHash,
   createHighlight,
   deleteHighlight,
+  deleteInvalidHighlights,
   generateMarkdownExport,
   getHighlightsByDirectory,
   getHighlightsByResource,
@@ -217,23 +218,29 @@ export const handleGetResourceHighlights = (
       return;
     }
 
-    // Get highlights for resource
-    const highlights = getHighlightsByResource(ctx.db, resource.id);
-
-    // Validate highlights and mark stale if necessary
+    // Clean up and get highlights for resource
     try {
       const fileContent = readFileSync(absolutePath, "utf-8");
-      validateResourceHighlights(ctx.db, highlights, fileContent);
-    } catch {
-      // File doesn't exist or can't be read - mark all highlights as stale
-      for (const highlight of highlights) {
-        if (!highlight.isStale) {
-          markHighlightStale(ctx.db, highlight.id);
-          highlight.isStale = true;
-        }
+
+      // Delete highlights where text no longer exists
+      const deletedCount = deleteInvalidHighlights(ctx.db, resource.id, fileContent);
+      if (deletedCount > 0) {
+        console.log(
+          `[highlights] Deleted ${deletedCount} invalid highlight(s) from ${resourcePath}`
+        );
       }
+    } catch {
+      // File doesn't exist or can't be read - delete all highlights for this resource
+      const highlights = getHighlightsByResource(ctx.db, resource.id);
+      for (const highlight of highlights) {
+        deleteHighlight(ctx.db, highlight.id);
+      }
+      sendJson(res, 200, { highlights: [] });
+      return;
     }
 
+    // Get remaining highlights after cleanup
+    const highlights = getHighlightsByResource(ctx.db, resource.id);
     sendJson(res, 200, { highlights });
   } catch (err) {
     console.error("[highlights] Failed to get resource highlights:", err);

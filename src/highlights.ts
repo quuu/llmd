@@ -445,6 +445,37 @@ export const deleteHighlight = (db: any, highlightId: string): void => {
   stmt.run(highlightId);
 };
 
+// Side effect: delete highlights where text no longer exists in document
+// Returns count of deleted highlights
+// biome-ignore lint/suspicious/noExplicitAny: Runtime compatibility layer
+export const deleteInvalidHighlights = (
+  db: any,
+  resourceId: string,
+  fileContent: string
+): number => {
+  const highlights = getHighlightsByResource(db, resourceId);
+  let deletedCount = 0;
+
+  for (const highlight of highlights) {
+    // Check if the highlighted text still exists in the document
+    const validation = validateHighlight({
+      content: fileContent,
+      contentHash: highlight.contentHash,
+      startOffset: highlight.startOffset,
+      endOffset: highlight.endOffset,
+      highlightedText: highlight.highlightedText,
+    });
+
+    // If text is not found in the document, delete the highlight
+    if (!validation.isValid) {
+      deleteHighlight(db, highlight.id);
+      deletedCount += 1;
+    }
+  }
+
+  return deletedCount;
+};
+
 // Side effect: update resource with content hash and backup path
 // biome-ignore lint/suspicious/noExplicitAny: Runtime compatibility layer
 export const updateResourceBackup = (

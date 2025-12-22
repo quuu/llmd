@@ -7,6 +7,7 @@ import {
   computeFileHash,
   createHighlight,
   deleteHighlight,
+  deleteInvalidHighlights,
   directoryHasHighlights,
   extractTextByOffset,
   findTextOffset,
@@ -392,6 +393,45 @@ describe("database operations", () => {
 
     const highlights = getHighlightsByResource(db, "resource-1");
     expect(highlights).toHaveLength(0);
+  });
+
+  test("deleteInvalidHighlights removes highlights where text no longer exists", () => {
+    const db = createTestDatabase();
+    insertTestResource(db, "resource-1", "/test/file.md", "file");
+
+    const content = "Hello world, this is a test document.";
+    const hash = computeFileHash(content);
+
+    // Create highlight for text that exists
+    const validId = createHighlight({
+      db,
+      resourceId: "resource-1",
+      startOffset: 0,
+      endOffset: 11,
+      highlightedText: "Hello world",
+      contentHash: hash,
+    });
+
+    // Create highlight for text that will be removed
+    const invalidId = createHighlight({
+      db,
+      resourceId: "resource-1",
+      startOffset: 20,
+      endOffset: 24,
+      highlightedText: "test",
+      contentHash: hash,
+    });
+
+    // New content without "test" but with "Hello world"
+    const newContent = "Hello world, this is a document.";
+
+    const deletedCount = deleteInvalidHighlights(db, "resource-1", newContent);
+
+    expect(deletedCount).toBe(1);
+
+    const highlights = getHighlightsByResource(db, "resource-1");
+    expect(highlights).toHaveLength(1);
+    expect(highlights[0]?.id).toBe(validId);
   });
 
   test("updateResourceBackup updates resource with hash and backup path", () => {

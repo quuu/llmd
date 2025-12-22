@@ -97,6 +97,12 @@ const handleMarkdownView = async (params: {
       const resource = highlightsModule.getResourceByPath(db, absolutePath);
 
       if (resource) {
+        // Clean up highlights where text no longer exists in document
+        const deletedCount = highlightsModule.deleteInvalidHighlights(db, resource.id, markdown);
+        if (deletedCount > 0) {
+          console.log(`[highlights] Deleted ${deletedCount} invalid highlight(s) from ${viewPath}`);
+        }
+
         const highlights = highlightsModule.getHighlightsByResource(db, resource.id);
         if (highlights.length > 0) {
           markdownWithHighlights = injectHighlightMarks(markdown, highlights);
