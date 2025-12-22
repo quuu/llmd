@@ -140,7 +140,7 @@ const getStyles = (themeName: string): string => {
       padding: 7px 8px 7px 6px;
       font-size: 0.9375rem;
       font-weight: 600;
-      color: ${isDark ? "#b3b3b3" : "#666"};
+      color: var(--fg);
       text-transform: none;
       position: relative;
       display: flex;
