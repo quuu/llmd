@@ -241,4 +241,3 @@ Potential improvements for future versions:
 - Search across all highlights
 - Highlight notes and annotations
 - Line-based tracking (more resilient to edits)
-- Diff preview when restoring files

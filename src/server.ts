@@ -59,9 +59,6 @@ const sendResponse = (
   res.end(body);
 };
 
-// Regex for matching .md extension (top-level to avoid re-creation)
-const MD_EXTENSION = /\.md$/;
-
 // Helper: handle markdown file view
 const handleMarkdownView = async (params: {
   viewPath: string;
