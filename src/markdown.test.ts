@@ -146,7 +146,7 @@ describe("addHeadingIds", () => {
 describe("processMarkdown", () => {
   test("returns HTML and TOC", async () => {
     const markdown = "# Title\n\nSome text.";
-    const { html, toc } = await processMarkdown(markdown, "light");
+    const { html, toc } = await processMarkdown(markdown, "github-light");
 
     expect(html).toContain("<h1");
     expect(html).toContain("Title");
@@ -155,7 +155,7 @@ describe("processMarkdown", () => {
 
   test("integrates link rewriting", async () => {
     const markdown = "[Link](./file.md)";
-    const { html } = await processMarkdown(markdown, "light");
+    const { html } = await processMarkdown(markdown, "github-light");
 
     expect(html).toContain("/view/file.md");
   });

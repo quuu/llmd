@@ -30,6 +30,28 @@ import tsx from "shiki/langs/tsx.mjs";
 import typescript from "shiki/langs/typescript.mjs";
 import xml from "shiki/langs/xml.mjs";
 import yaml from "shiki/langs/yaml.mjs";
+<<<<<<< Updated upstream
+import dracula from "shiki/themes/dracula.mjs";
+// Import themes we support
+import githubDark from "shiki/themes/github-dark.mjs";
+import githubLight from "shiki/themes/github-light.mjs";
+import monokai from "shiki/themes/monokai.mjs";
+import nord from "shiki/themes/nord.mjs";
+import solarizedDark from "shiki/themes/solarized-dark.mjs";
+import solarizedLight from "shiki/themes/solarized-light.mjs";
+=======
+import xml from "shiki/langs/xml.mjs";
+import yaml from "shiki/langs/yaml.mjs";
+
+// Import themes we support
+import githubDark from "shiki/themes/github-dark.mjs";
+import githubLight from "shiki/themes/github-light.mjs";
+import nord from "shiki/themes/nord.mjs";
+import dracula from "shiki/themes/dracula.mjs";
+import monokai from "shiki/themes/monokai.mjs";
+import solarizedLight from "shiki/themes/solarized-light.mjs";
+import solarizedDark from "shiki/themes/solarized-dark.mjs";
+>>>>>>> Stashed changes
 
 // Lazy-initialized highlighter singleton
 let highlighter: HighlighterCore | null = null;

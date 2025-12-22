@@ -125,14 +125,12 @@ const applySyntaxHighlighting = async (html: string, theme: "light" | "dark"): P
 // Combined function: full markdown processing pipeline
 export const processMarkdown = async (
   markdown: string,
-  themeName = "light"
+  codeTheme?: string
 ): Promise<{ html: string; toc: string }> => {
-  // Determine if theme is dark for syntax highlighting
-  const theme = themeName === "light" || themeName === "solarized" ? "light" : "dark";
   const headings = extractHeadings(markdown);
   const rawHtml = renderMarkdown(markdown);
   const htmlWithIds = addHeadingIds(rawHtml);
-  const htmlWithHighlighting = await applySyntaxHighlighting(htmlWithIds, theme);
+  const htmlWithHighlighting = await applySyntaxHighlighting(htmlWithIds, codeTheme);
   const toc = generateTOC(headings);
 
   return { html: htmlWithHighlighting, toc };

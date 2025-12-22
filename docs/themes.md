@@ -126,3 +126,31 @@ If you like a built-in theme's colors but want different fonts, create a custom 
 ```
 
 Then use it with `llmd --theme nord-serif`.
+
+## Code Syntax Themes
+
+Each theme can specify a `codeTheme` to control syntax highlighting colors in code blocks. llmd supports these Shiki themes out of the box:
+
+- `github-dark` - GitHub's dark theme (default for dark themes)
+- `github-light` - GitHub's light theme (default for light themes)
+- `nord` - Nord color scheme
+- `dracula` - Dracula theme
+- `monokai` - Monokai theme
+- `solarized-light` - Solarized Light
+- `solarized-dark` - Solarized Dark
+
+If not specified, the `codeTheme` defaults to `github-dark` for dark themes and `github-light` for light themes.
+
+### Example
+
+```json
+{
+  "themes": {
+    "my-dark-theme": {
+      "colors": { ... },
+      "fonts": { ... },
+      "codeTheme": "dracula"
+    }
+  }
+}
+```

@@ -15,6 +15,7 @@ import { initEventService } from "./events";
 import { processMarkdown } from "./markdown";
 import { handleApiRoute } from "./routes/api";
 import { generateErrorPage, generateIndexPage, generateMarkdownPage } from "./template";
+import { getTheme } from "./theme-config";
 import type { Config, EventService, MarkdownFile } from "./types";
 import { unwatchFile, watchFile } from "./watcher";
 
@@ -104,7 +105,12 @@ const handleMarkdownView = async (params: {
     }
 
     const filename = viewPath.split("/").pop() ?? viewPath;
-    const { html, toc } = await processMarkdown(markdownWithHighlights, config.theme);
+    // Get code theme from theme configuration
+    const theme = getTheme(config.theme);
+    const codeTheme =
+      theme.codeTheme ||
+      (config.theme === "light" || config.theme === "solarized" ? "github-light" : "github-dark");
+    const { html, toc } = await processMarkdown(markdownWithHighlights, codeTheme);
     const page = generateMarkdownPage({
       html,
       toc,

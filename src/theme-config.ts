@@ -30,6 +30,10 @@ export type Theme = {
     code: string;
     googleFontsUrl?: string; // Optional Google Fonts CSS import
   };
+  // Code syntax highlighting theme (Shiki theme name)
+  // Common options: "github-dark", "github-light", "nord", "dracula", "monokai", "solarized-light", "solarized-dark"
+  // If not specified, defaults to "github-dark" for dark themes and "github-light" for light themes
+  codeTheme?: string;
 };
 
 // Built-in themes (colors + fonts paired together)
@@ -56,6 +60,7 @@ const BUILT_IN_THEMES: Record<string, Theme> = {
         '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       code: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',
     },
+    codeTheme: "github-dark",
   },
   // Original light theme with serif fonts
   light: {
@@ -78,6 +83,7 @@ const BUILT_IN_THEMES: Record<string, Theme> = {
       heading: "Georgia, 'Times New Roman', Times, serif",
       code: '"Courier New", Courier, monospace',
     },
+    codeTheme: "github-light",
   },
   // Nord-inspired theme with modern fonts
   nord: {
@@ -102,6 +108,7 @@ const BUILT_IN_THEMES: Record<string, Theme> = {
       googleFontsUrl:
         "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap",
     },
+    codeTheme: "nord",
   },
   // Dracula-inspired theme with future fonts
   dracula: {
@@ -126,6 +133,7 @@ const BUILT_IN_THEMES: Record<string, Theme> = {
       googleFontsUrl:
         "https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;700&display=swap",
     },
+    codeTheme: "dracula",
   },
   // Solarized Light with literary fonts
   solarized: {
@@ -150,6 +158,7 @@ const BUILT_IN_THEMES: Record<string, Theme> = {
       googleFontsUrl:
         "https://fonts.googleapis.com/css2?family=Spectral:wght@400;700&family=Newsreader:wght@400;700&family=Geist+Mono:wght@400;700&display=swap",
     },
+    codeTheme: "solarized-light",
   },
   // Monokai-inspired theme with monospace fonts
   monokai: {
@@ -166,6 +175,28 @@ const BUILT_IN_THEMES: Record<string, Theme> = {
       highlightBg: "#e6db74", // Monokai yellow
       highlightStaleBg: "#f92672", // Monokai pink/red
       headingColor: "#a6e22e", // Monokai green
+    },
+    fonts: {
+      body: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',
+      heading: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',
+      code: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',
+    },
+    codeTheme: "monokai",
+  },
+  mindful: {
+    colors: {
+      bg: "#3a2732",
+      fg: "#fff4eb",
+      border: "#FFE2C7",
+      hover: "#644957",
+      accent: "#5A4e8f",
+      codeBg: "#35212B",
+      sidebarBg: "#35212B",
+      folderIcon: "#FD8B60",
+      fileIcon: "#59BBC2",
+      highlightBg: "#59BBC2",
+      highlightStaleBg: "#FD8B60",
+      headingColor: "#FD8B60",
     },
     fonts: {
       body: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',

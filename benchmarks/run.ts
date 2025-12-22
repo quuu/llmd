@@ -36,7 +36,8 @@ const benchmarkRendering = async (
   markdown: string,
   theme: "light" | "dark" = "light"
 ): Promise<BenchmarkResult> => {
-  const { duration } = await measureTime(() => processMarkdown(markdown, theme));
+  const codeTheme = theme === "light" ? "github-light" : "github-dark";
+  const { duration } = await measureTime(() => processMarkdown(markdown, codeTheme));
 
   return {
     name: "Markdown Rendering",

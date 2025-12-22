@@ -10,7 +10,7 @@ Want to see what llmd can do? **Try it on its own documentation:**
 
 ```bash
 # Install llmd
-npm install -g llmd
+pnpm install -g llmd
 
 # View the documentation
 llmd docs
@@ -78,18 +78,6 @@ bun test
 # Build binary
 bun run build
 ```
-
-## Tech Stack
-
-- **Runtime**: Bun
-- **Markdown**: marked (GFM support)
-- **Highlighting**: Shiki (VS Code themes)
-- **Server**: Node.js http + ws
-- **Bundler**: Bun's built-in bundler
-
-## License
-
-MIT
 
 ## Contributing
 

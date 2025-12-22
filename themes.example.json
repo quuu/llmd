@@ -23,7 +23,8 @@
         "body": "Inter, sans-serif",
         "code": "JetBrains Mono, monospace",
         "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap"
-      }
+      },
+      "codeTheme": "github-dark"
     },
     "forest": {
       "colors": {
