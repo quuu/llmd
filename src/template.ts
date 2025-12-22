@@ -132,7 +132,7 @@ const getStyles = (themeName: string): string => {
       margin-top: 2px;
       position: relative;
       padding-left: 12px;
-      border-left: 1px solid ${isDark ? "#333" : "#ddd"};
+      border-left: 1px solid var(--border);
       margin-left: 6px;
     }
     
