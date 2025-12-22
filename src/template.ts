@@ -225,7 +225,7 @@ const getStyles = (themeName: string): string => {
     
     .sidebar-nav a.active {
       background: var(--accent);
-      color: ${isDark ? "rgba(0, 0, 0, 0.75)" : "rgba(255, 255, 255, 0.75)"};
+      color: ${isDark ? "rgba(0, 0, 0, 0.7)" : "rgba(255, 255, 255, 0.7)"};
       font-weight: 600;
     }
     
