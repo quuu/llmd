@@ -4,7 +4,8 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Build client bundle on startup and cache it
+// Cache directory path and client script
+const __dirname = dirname(fileURLToPath(import.meta.url));
 let clientScriptCache: string | null = null;
 
 export const getClientScript = async (): Promise<string> => {
@@ -14,8 +15,7 @@ export const getClientScript = async (): Promise<string> => {
 
   try {
     // Read pre-built client bundle from dist/
-    const __dirname = dirname(fileURLToPath(import.meta.url));
-    const clientPath = join(__dirname, "../dist/client.js");
+    const clientPath = join(__dirname, "client.js");
     clientScriptCache = await readFile(clientPath, "utf-8");
     return clientScriptCache;
   } catch (error) {
