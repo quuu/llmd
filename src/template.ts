@@ -35,7 +35,8 @@ const getStyles = (themeName: string): string => {
       color: var(--fg);
       background: var(--bg);
       display: flex;
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
       position: relative;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
